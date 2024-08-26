@@ -54,7 +54,7 @@ const Hero = () => {
                     </a>
 
                     <a
-                      href="/"
+                      href="https://microsoftedge.microsoft.com/addons/detail/readecho%E5%90%8C%E6%AD%A5%E4%BD%A0%E7%9A%84%E5%BE%AE%E4%BF%A1%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/cgbmfehekdfcmgicopdlggohdoojdnoe"
                       className="text-white/60 duration-300 ease-in-out hover:text-white"
                       target="_blank"
                       title="edge插件"
