@@ -16,14 +16,14 @@ const Hero = () => {
                 className="hero-content wow fadeInUp mx-auto max-w-[780px] text-center"
                 data-wow-delay=".2s"
               >
-                <h1 className="mb-6 text-3xl font-bold leading-snug text-white sm:text-4xl sm:leading-snug lg:text-5xl lg:leading-[1.2]">
-                  同步你的微信读书笔记，让回顾释放知识的力量
+                <h1 className="mb-6 text-3xl font-bold leading-snug text-white sm:text-4xl sm:leading-snug lg:text-5xl lg:leading-[1.2] text-center">
+                  同步你的微信读书笔记<br />让回顾释放知识的力量
                 </h1>
                 <p className="mx-auto max-w-[600px] text-base font-medium text-white sm:text-lg sm:leading-[1.44]">
-                  只需几步轻松获取并保存微信读书笔记。
+                  只需几步轻松获取并保存微信读书笔记
                 </p>
                 <p className="mx-auto mb-9 max-w-[600px] text-base font-medium text-white sm:text-lg sm:leading-[1.44]">
-                  自定义你的笔记回顾方式，不错过每一个阅读瞬间。
+                  自定义你的笔记回顾方式，不错过每一个阅读瞬间
                 </p>
                 <HeroSection />
                 <div>
