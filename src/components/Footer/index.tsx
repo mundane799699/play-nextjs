@@ -19,6 +19,20 @@ const Footer = () => {
         >
           今日古诗词
         </Link>
+        <span className="mx-2 text-body-color"> | </span>
+        <Link
+          href="https://toolsapp.cc/"
+          className="text-body-color hover:text-primary dark:text-dark-6 dark:hover:text-primary"
+        >
+          toolsapp
+        </Link>
+        <span className="mx-2 text-body-color"> | </span>
+        <Link
+          href="https://javaqahub.cc/"
+          className="text-body-color hover:text-primary dark:text-dark-6 dark:hover:text-primary"
+        >
+          javaqahub
+        </Link>
       </div>
     </footer>
   );
