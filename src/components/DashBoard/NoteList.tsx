@@ -1,13 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
 import dayjs from "dayjs";
 import { useDebounce } from "use-debounce";
-import { X } from "lucide-react";
-import { exportNotesService } from "@/services/notes";
+import { ChevronDown, X } from "lucide-react";
+import { exportNotesService, exportNotesMdService } from "@/services/notes";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 const NoteList = ({ initialBookName }: { initialBookName: string }) => {
   const [notes, setNotes] = useState([]);
   const [bookName, setBookName] = useState(initialBookName);
   const [debouncedBookName] = useDebounce(bookName, 300);
+  const [exportFormat, setExportFormat] = useState<"excel" | "markdown">(
+    "excel",
+  );
 
   const getNotes = useCallback(async (name: string) => {
     const response = await fetch(`/api/notes?bookName=${name}`, {
@@ -36,8 +40,12 @@ const NoteList = ({ initialBookName }: { initialBookName: string }) => {
     setBookName("");
   };
 
-  const exportNotes = async () => {
-    exportNotesService(debouncedBookName);
+  const handleExport = async () => {
+    if (exportFormat === "excel") {
+      await exportNotesService(debouncedBookName);
+    } else if (exportFormat === "markdown") {
+      await exportNotesMdService(debouncedBookName);
+    }
   };
 
   return (
@@ -66,12 +74,39 @@ const NoteList = ({ initialBookName }: { initialBookName: string }) => {
             )}
           </div>
         </div>
-        <button
-          onClick={exportNotes}
-          className="rounded-md border  border-primary px-4 py-2 text-primary transition duration-300"
-        >
-          导出
-        </button>
+
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleExport}
+            className="rounded-md border border-primary px-4 py-2 text-primary transition duration-300"
+          >
+            导出
+          </button>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button className="flex w-36 items-center justify-center rounded-md border border-primary px-4 py-2 text-primary outline-none transition duration-300">
+                <span>{exportFormat}</span>
+                <ChevronDown className="ml-2" size={16} />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content className="min-w-[120px] rounded-md bg-white p-1 shadow-md">
+                <DropdownMenu.Item
+                  className="cursor-pointer rounded px-2 py-1 text-primary outline-none hover:bg-gray-100"
+                  onSelect={() => setExportFormat("excel")}
+                >
+                  excel
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  className="cursor-pointer rounded px-2 py-1 text-primary outline-none hover:bg-gray-100"
+                  onSelect={() => setExportFormat("markdown")}
+                >
+                  markdown
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        </div>
       </div>
       <ul className="space-y-4">
         {notes.map((note: any) => (
@@ -86,7 +121,9 @@ const NoteList = ({ initialBookName }: { initialBookName: string }) => {
             </div>
             <div className="mt-16 flex justify-between">
               <p className="text-gray-400">
-                {note.bookName}/{note.chapterName}
+                {note.chapterName
+                  ? `${note.bookName}/${note.chapterName}`
+                  : note.bookName}
               </p>
               <p className="text-gray-400">
                 {note.noteTime &&
