@@ -34,9 +34,9 @@ export default function Home() {
       <Pricing />
       <Testimonials />
       <Team />
-      <HomeBlogSection posts={posts} />
+      <HomeBlogSection posts={posts} /> */}
       <Contact />
-      <Clients /> */}
+      {/* <Clients /> */}
       <Footer />
     </main>
   );

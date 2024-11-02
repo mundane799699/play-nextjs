@@ -4,7 +4,7 @@ import SingleFaq from "./SingleFaq";
 
 const Faq = () => {
   return (
-    <section className="relative z-20 overflow-hidden bg-white pb-8 pt-20 dark:bg-dark lg:pb-[50px] lg:pt-[120px]">
+    <section className="relative z-20 overflow-hidden bg-gray-1 pb-8 pt-20 dark:bg-dark-2 lg:pb-[50px] lg:pt-[120px]">
       <div className="container">
         <SectionTitle
           subtitle="FAQ"
@@ -39,15 +39,6 @@ const Faq = () => {
               question="Readecho的每日回顾功能如何工作？"
               answer="每日回顾功能根据遗忘曲线原理自动提示用户在特定时间回顾笔记。你可以在设置中调整回顾频率和时间。还在开发中，敬请期待"
             />
-            <div className="relative group">
-              <SingleFaq
-                question="如何联系我们？"
-                answer="此处扫码进入用户交流群。"
-              />
-              <div className="absolute top-20 left-36 hidden group-hover:block">
-                <img src="/images/faq/用户交流二维码.jpg" alt="用户交流群二维码" className="w-1/4 h-1/4" />
-              </div>
-            </div>
           </div>
         </div>
       </div>
