@@ -72,6 +72,7 @@ const menuData: Menu[] = [
     id: 7,
     title: "我的笔记",
     path: "/dashboard",
+    path2: "/dashboard/notes",
     newTab: false,
   },
 ];

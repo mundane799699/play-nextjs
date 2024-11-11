@@ -16,7 +16,7 @@ export async function notesService(
   });
 }
 
-export async function exportNotesService(bookName: string) {
+export async function exportNotesService(bookId: string) {
   try {
     const response = await axios({
       method: "POST",
@@ -25,7 +25,7 @@ export async function exportNotesService(bookName: string) {
         "Content-Type": "application/json",
       },
       data: {
-        bookName,
+        bookId,
       },
       responseType: "blob",
     });
@@ -50,7 +50,7 @@ export async function exportNotesService(bookName: string) {
   }
 }
 
-export async function exportNotesMdService(bookName: string) {
+export async function exportNotesMdService(bookId: string) {
   try {
     const response = await axios({
       method: "POST",
@@ -59,7 +59,7 @@ export async function exportNotesMdService(bookName: string) {
         "Content-Type": "application/json",
       },
       data: {
-        bookName,
+        bookId,
       },
       responseType: "blob",
     });

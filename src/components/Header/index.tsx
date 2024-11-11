@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 import menuData from "./menuData";
+import { Menu } from "@/types/menu";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -43,6 +44,10 @@ const Header = () => {
   };
 
   const { theme, setTheme } = useTheme();
+
+  const meetPath = (menu: Menu) => {
+    return pathUrl === menu?.path || pathUrl === menu?.path2;
+  };
 
   return (
     <>
@@ -157,7 +162,7 @@ const Header = () => {
                               scroll={false}
                               href={menuItem.path}
                               className={`ud-menu-scroll flex py-2 text-base text-dark group-hover:text-primary dark:text-white dark:group-hover:text-primary lg:inline-flex lg:px-0 lg:py-6 ${
-                                pathUrl === menuItem?.path && "text-primary"
+                                meetPath(menuItem) && "text-primary"
                               }`}
                             >
                               {menuItem.title}

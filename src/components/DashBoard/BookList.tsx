@@ -1,12 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface BookListProps {
-  onBookSelect: (bookId: string) => void;
-}
-
-const BookList: React.FC<BookListProps> = ({ onBookSelect }) => {
+const BookList = () => {
+  const router = useRouter();
   const [books, setBooks] = useState([]);
   useEffect(() => {
     getBooks();
@@ -25,8 +23,8 @@ const BookList: React.FC<BookListProps> = ({ onBookSelect }) => {
     }
   };
 
-  const handleBookClick = (bookName: string) => {
-    onBookSelect(bookName);
+  const handleBookClick = (bookId: string) => {
+    router.push(`/dashboard/notes?bookId=${bookId}`);
   };
 
   return (
@@ -35,7 +33,7 @@ const BookList: React.FC<BookListProps> = ({ onBookSelect }) => {
         <li
           key={item.bookId}
           className="flex cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
-          onClick={() => handleBookClick(item.bookName)}
+          onClick={() => handleBookClick(item.bookId)}
         >
           <img
             className="mr-4 h-28 w-20 object-cover"
