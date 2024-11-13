@@ -11,9 +11,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container pb-10 pt-20 lg:pb-20 lg:pt-[120px]">
-      <TabComponent />
-      {children}
+    <div className="min-h-screen bg-[#faf6f2] pb-10 pt-20 lg:pb-20 lg:pt-[120px]">
+      <div className="container">
+        <TabComponent />
+        {children}
+      </div>
     </div>
   );
 }

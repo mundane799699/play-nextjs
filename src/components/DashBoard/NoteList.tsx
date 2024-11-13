@@ -42,7 +42,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {bookName && (
@@ -83,11 +83,11 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           </DropdownMenu.Root>
         </div>
       </div>
-      <ul className="space-y-4">
+      <ul className="mt-4 space-y-4">
         {notes.map((note: any) => (
           <div
             key={note.reviewId}
-            className="rounded-lg border border-gray-200 bg-white p-4 shadow-md"
+            className="rounded-lg border border-[#b4b2a7] bg-white p-4 hover:bg-[#f8f9fa]"
           >
             <h3 className="mb-2 text-lg font-semibold">{note.noteContent}</h3>
             <div className="flex">
@@ -95,12 +95,12 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
               <p className="flex-1 text-sm text-gray-600">{note.markText}</p>
             </div>
             <div className="mt-16 flex justify-between">
-              <p className="text-gray-400">
+              <p className="text-[#545247]">
                 {note.chapterName
                   ? `${note.bookName}/${note.chapterName}`
                   : note.bookName}
               </p>
-              <p className="text-gray-400">
+              <p className="text-[#545247]">
                 {note.noteTime &&
                   dayjs.unix(note.noteTime).format("YYYY-MM-DD HH:mm:ss")}
               </p>

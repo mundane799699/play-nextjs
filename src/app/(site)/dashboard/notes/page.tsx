@@ -8,7 +8,7 @@ const NotesPage = () => {
   const searchParams = useSearchParams();
   const bookId = searchParams.get("bookId");
   return (
-    <div className="py-4">
+    <div>
       <NoteList initialBookId={bookId || ""} />
     </div>
   );

@@ -32,7 +32,7 @@ const BookList = () => {
       {books.map((item: any) => (
         <li
           key={item.bookId}
-          className="flex cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+          className="flex cursor-pointer rounded-lg border border-[#b4b2a7] bg-white p-4 transition-colors hover:bg-[#f8f9fa]"
           onClick={() => handleBookClick(item.bookId)}
         >
           <img

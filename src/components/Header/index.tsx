@@ -46,7 +46,9 @@ const Header = () => {
   const { theme, setTheme } = useTheme();
 
   const meetPath = (menu: Menu) => {
-    return pathUrl === menu?.path || pathUrl === menu?.path2;
+    if (!menu.path) return false;
+    if (menu.path === "/") return pathUrl === "/";
+    return pathUrl.startsWith(menu.path);
   };
 
   return (
