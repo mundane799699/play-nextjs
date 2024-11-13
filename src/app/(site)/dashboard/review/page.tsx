@@ -188,7 +188,7 @@ const ReviewPage = () => {
           <div className="rounded-lg bg-white/80 p-12 shadow-sm backdrop-blur-sm">
             <div className="mb-12">
               <blockquote className="mb-8 text-lg italic text-gray-700">
-                "{sampleNotes[currentIndex].quote}"
+                &ldquo;{sampleNotes[currentIndex].quote}&rdquo;
               </blockquote>
               <div className="leading-relaxed text-gray-800">
                 {sampleNotes[currentIndex].note}
