@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 const TokenKey = "Admin-Token";
 
 export function setToken(token: string) {
-  Cookies.set(TokenKey, token);
+  Cookies.set(TokenKey, token, { expires: 30 });
 }
 
 export function getToken() {
