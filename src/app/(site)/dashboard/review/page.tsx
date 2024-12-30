@@ -5,6 +5,8 @@ import { Share2, Mail, Shuffle, Settings, X } from "lucide-react";
 import dayjs from "dayjs";
 import html2canvas from "html2canvas";
 import Image from "next/image";
+import { getRandomReview } from "@/services/notes";
+import Modal from "@/components/DashBoard/Modal";
 
 interface Note {
   reviewId: string;
@@ -16,7 +18,13 @@ interface Note {
 }
 
 // Membership Dialog Component
-const MembershipDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const MembershipDialog = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -26,66 +34,71 @@ const MembershipDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4">
           <h2 className="text-lg font-medium">开通会员</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            className="rounded-full p-1 hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="space-y-6 p-6">
           {/* Features */}
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <div className="w-4 h-4 bg-orange-500 rounded" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
+                <div className="h-4 w-4 rounded bg-orange-500" />
               </div>
               <div>
                 <h3 className="font-medium">每日回顾推送到邮箱</h3>
-                <p className="text-gray-500 text-sm">让回顾释放阅读的价值</p>
+                <p className="text-sm text-gray-500">让回顾释放阅读的价值</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <div className="w-4 h-4 bg-orange-500 rounded" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
+                <div className="h-4 w-4 rounded bg-orange-500" />
               </div>
               <div>
                 <h3 className="font-medium">同步笔记不限数量</h3>
-                <p className="text-gray-500 text-sm">普通用户最大1000个</p>
+                <p className="text-sm text-gray-500">普通用户最大1000个</p>
               </div>
             </div>
           </div>
 
           {/* Pricing */}
-          <div className="flex justify-center items-baseline space-x-1 text-center">
+          <div className="flex items-baseline justify-center space-x-1 text-center">
             <div className="flex items-baseline space-x-1">
               <span className="text-2xl font-bold text-[#ff6b24]">¥9</span>
               <span className="text-gray-500">/月</span>
             </div>
-            <span className="text-gray-400 mx-2">·</span>
+            <span className="mx-2 text-gray-400">·</span>
             <div className="flex items-baseline space-x-2">
-              <span className="text-sm line-through text-gray-400">¥99</span>
+              <span className="text-sm text-gray-400 line-through">¥99</span>
               <span className="text-2xl font-bold text-[#ff6b24]">¥68</span>
               <span className="text-gray-500">/年</span>
             </div>
           </div>
 
           {/* Instructions */}
-          <div className="text-center space-y-2">
+          <div className="space-y-2 text-center">
             <p>扫码付款，开通会员</p>
-            <p className="text-sm text-gray-500">付款成功后，小助理会添加你为会员用户</p>
+            <p className="text-sm text-gray-500">
+              付款成功后，小助理会添加你为会员用户
+            </p>
             <p className="text-sm text-gray-500">微信联系：77213305</p>
           </div>
 
           {/* QR Code */}
           <div className="flex justify-center">
-            <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-gray-100">
               {/* Replace with actual QR code */}
               <div className="text-gray-400">QR Code</div>
             </div>
           </div>
 
           {/* Footer Text */}
-          <div className="text-center text-sm text-gray-500 space-y-1">
+          <div className="space-y-1 text-center text-sm text-gray-500">
             <p>谢谢你的支持</p>
             <p>激励我们不断完善这一产品</p>
           </div>
@@ -96,7 +109,13 @@ const MembershipDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 };
 
 // Settings Dialog Component
-const SettingsDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const SettingsDialog = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   const [selectedBook, setSelectedBook] = useState("全部笔记");
   const [reviewCount, setReviewCount] = useState("5");
   const [email, setEmail] = useState("user@example.com");
@@ -123,20 +142,23 @@ const SettingsDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
             <h2 className="text-lg font-medium">邮箱回顾（Beta）</h2>
-            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
-              <X className="w-5 h-5" />
+            <button
+              onClick={onClose}
+              className="rounded-full p-1 hover:bg-gray-100"
+            >
+              <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6">
+          <div className="space-y-6 p-6">
             {/* Review Range */}
             <div className="space-y-2">
               <label className="block text-sm font-medium">回顾范围</label>
               <select
                 value={selectedBook}
                 onChange={(e) => setSelectedBook(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md bg-white"
+                className="w-full rounded-md border bg-white px-3 py-2"
               >
                 <option value="全部笔记">全部笔记</option>
                 <option value="少有人走的路">少有人走的路</option>
@@ -150,9 +172,9 @@ const SettingsDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <select
                 value={reviewCount}
                 onChange={(e) => setReviewCount(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md bg-white"
+                className="w-full rounded-md border bg-white px-3 py-2"
               >
-                {reviewOptions.map(option => (
+                {reviewOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -168,35 +190,35 @@ const SettingsDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="请输入邮箱地址"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full rounded-md border px-3 py-2"
               />
             </div>
 
             {/* Pro Button */}
             <button
               onClick={() => setShowMembership(true)}
-              className="w-full py-3 bg-[#ff6b24] text-white rounded-md hover:bg-[#ff6b24]/90 transition font-medium"
+              className="w-full rounded-md bg-[#ff6b24] py-3 font-medium text-white transition hover:bg-[#ff6b24]/90"
             >
               8￥开通会员立享邮箱回顾
             </button>
 
             {/* Description */}
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-center text-sm text-gray-500">
               因为邮箱发送需要服务器成本，故收取成本费用，后续为会员用户提供更多服务，感谢支持
             </p>
           </div>
 
           {/* Footer */}
-          <div className="border-t p-4 flex justify-end space-x-3">
+          <div className="flex justify-end space-x-3 border-t p-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md transition"
+              className="rounded-md px-4 py-2 text-gray-600 transition hover:bg-gray-100"
             >
               取消
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-[#14161a] text-white rounded-md hover:bg-[#14161a]/90 transition"
+              className="rounded-md bg-[#14161a] px-4 py-2 text-white transition hover:bg-[#14161a]/90"
             >
               保存
             </button>
@@ -213,8 +235,18 @@ const SettingsDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
 };
 
 // Share Dialog Component
-const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () => void; note: Note }) => {
-  const [selectedColor, setSelectedColor] = useState("bg-gradient-to-br from-pink-400 to-purple-500");
+const ShareDialog = ({
+  isOpen,
+  onClose,
+  note,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  note: Note;
+}) => {
+  const [selectedColor, setSelectedColor] = useState(
+    "bg-gradient-to-br from-pink-400 to-purple-500",
+  );
   const [selectedFont, setSelectedFont] = useState("寒蝉活楷体");
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -237,15 +269,18 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
       }
     }
   };
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-[90%] max-w-2xl rounded-lg bg-white p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-medium">分享书摘</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
-            <X className="w-5 h-5" />
+          <button
+            onClick={onClose}
+            className="rounded-full p-1 hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -253,18 +288,20 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
         <div className="mb-6">
           <div
             ref={cardRef}
-            className={`${selectedColor} w-full min-h-[200px] rounded-lg p-8 flex flex-col justify-between`}
-            style={{ minHeight: 'max-content' }}
+            className={`${selectedColor} flex min-h-[200px] w-full flex-col justify-between rounded-lg p-8`}
+            style={{ minHeight: "max-content" }}
           >
-            <div className={`text-white space-y-4 ${selectedFont}`}>
-              <div className="text-lg leading-relaxed break-words whitespace-pre-wrap">{note.markText}</div>
+            <div className={`space-y-4 text-white ${selectedFont}`}>
+              <div className="whitespace-pre-wrap break-words text-lg leading-relaxed">
+                {note.markText}
+              </div>
               <div className="text-sm opacity-80">
                 /{note.bookName}
                 <br />
                 {note.chapterName}
               </div>
             </div>
-            <div className="text-white/70 text-sm mt-4">
+            <div className="mt-4 text-sm text-white/70">
               - Created by Readecho -
             </div>
           </div>
@@ -274,7 +311,7 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
         <div className="space-y-6">
           {/* Color Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">背景颜色</label>
+            <label className="mb-2 block text-sm font-medium">背景颜色</label>
             <div className="grid grid-cols-8 gap-2">
               {[
                 "bg-gradient-to-br from-pink-400 to-purple-500",
@@ -288,8 +325,10 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
               ].map((color, index) => (
                 <button
                   key={index}
-                  className={`${color} w-8 h-8 rounded-full ${
-                    selectedColor === color ? "ring-2 ring-offset-2 ring-primary" : ""
+                  className={`${color} h-8 w-8 rounded-full ${
+                    selectedColor === color
+                      ? "ring-2 ring-primary ring-offset-2"
+                      : ""
                   }`}
                   onClick={() => setSelectedColor(color)}
                 />
@@ -299,18 +338,13 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
 
           {/* Font Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">字体</label>
+            <label className="mb-2 block text-sm font-medium">字体</label>
             <select
               value={selectedFont}
               onChange={(e) => setSelectedFont(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
+              className="w-full rounded-md border px-3 py-2"
             >
-              {[
-                "寒蝉活楷体",
-                "思源黑体",
-                "霞鹜文楷",
-                "得意黑",
-              ].map((font) => (
+              {["寒蝉活楷体", "思源黑体", "霞鹜文楷", "得意黑"].map((font) => (
                 <option key={font} value={font}>
                   {font}
                 </option>
@@ -321,7 +355,7 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
           {/* Download Button */}
           <button
             onClick={handleDownload}
-            className="w-full py-3 bg-black text-white rounded-md hover:bg-black/90 transition"
+            className="w-full rounded-md bg-black py-3 text-white transition hover:bg-black/90"
           >
             下载图片
           </button>
@@ -331,95 +365,30 @@ const ShareDialog = ({ isOpen, onClose, note }: { isOpen: boolean; onClose: () =
   );
 };
 
-// 示例数据
-const sampleNotes: Note[] = [
-  {
-    reviewId: "1",
-    bookName: "少有人走的路",
-    chapterName: "自律篇",
-    noteContent: "生活中的很多不适都源于我们的懒惰和放纵。自律不是束缚，而是通向自由的道路。",
-    markText: "最好的药物是忙碌，最好的医生是睡眠，最好的疗愈是读书，最好的爱情是自爱，最好的自爱是自律。",
-    noteTime: dayjs().unix(),
-  },
-  {
-    reviewId: "2",
-    bookName: "认知觉醒",
-    chapterName: "深度思考",
-    noteContent: "深度思考是一种能力，也是一种习惯。它能帮助我们看清事物的本质，做出更好的决策。",
-    markText: "人与人最大的差距不是知识，而是认知。认知决定了我们看待世界的方式，也决定了我们的选择和行动。",
-    noteTime: dayjs().unix(),
-  },
-  {
-    reviewId: "3",
-    bookName: "原则",
-    chapterName: "生活原则",
-    noteContent: "拥抱现实，直面问题。只有这样，我们才能找到真正的解决方案。",
-    markText: "痛苦 + 反思 = 进步。每一次失败都是一次学习的机会，关键是要从中吸取教训并改进。",
-    noteTime: dayjs().unix(),
-  }
-];
-
 const ReviewPage = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchNotes = async () => {
-      setIsLoading(true);
-      const urlParams = new URLSearchParams(window.location.search);
-      const bookId = urlParams.get('bookId');
-      
-      if (!bookId) {
-        // 如果没有bookId，使用示例数据
-        setNotes(sampleNotes);
-        setCurrentNote(sampleNotes[Math.floor(Math.random() * sampleNotes.length)]);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/notes?bookId=${bookId}`, {
-          method: "GET",
-        });
-        
-        if (!response.ok) {
-          console.log(response.statusText);
-          throw new Error('Failed to fetch notes');
-        }
-        
-        const { code, rows } = await response.json();
-        if (code === 200) {
-          const filteredNotes = rows.filter((item: any) => item.markText);
-          if (filteredNotes.length > 0) {
-            setNotes(filteredNotes);
-            const randomIndex = Math.floor(Math.random() * filteredNotes.length);
-            setCurrentNote(filteredNotes[randomIndex]);
-          } else {
-            // 如果没有笔记，使用示例数据
-            setNotes(sampleNotes);
-            setCurrentNote(sampleNotes[Math.floor(Math.random() * sampleNotes.length)]);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching notes:', error);
-        // 发生错误时使用示例数据
-        setNotes(sampleNotes);
-        setCurrentNote(sampleNotes[Math.floor(Math.random() * sampleNotes.length)]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchNotes();
+    handleRandomNote();
   }, []);
 
   const handleRandomNote = () => {
-    if (notes.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * notes.length);
-    setCurrentNote(notes[randomIndex]);
+    getRandomReview()
+      .then((res) => {
+        const { code, data, msg } = res;
+        if (code === 200) {
+          setCurrentNote(data);
+        } else if (code === 0) {
+          setIsModalOpen(true);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   if (isLoading) {
@@ -441,22 +410,23 @@ const ReviewPage = () => {
       }}
     >
       {/* 顶部工具栏 */}
-      <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
-        <div className="h-8 w-8 rounded-lg bg-stone-200/50"></div>
+      <div className="mx-auto flex max-w-5xl items-center justify-end p-4">
         <div className="flex gap-4">
           <button
             onClick={() => setShowShareDialog(true)}
-            className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition"
+            className="flex items-center space-x-1 text-gray-600 transition hover:text-gray-900"
           >
-            <Share2 className="w-5 h-5" />
+            <Share2 className="h-5 w-5" />
             <span>分享</span>
           </button>
           <button
             onClick={() => setShowSettingsDialog(true)}
-            className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition"
+            className="flex items-center space-x-1 text-gray-600 transition hover:text-gray-900"
           >
-            <Mail className="w-5 h-5" />
-            <span>邮箱回顾<span className="text-[#ff6b24] ml-1">(Pro)</span></span>
+            <Mail className="h-5 w-5" />
+            <span>
+              邮箱回顾<span className="ml-1 text-[#ff6b24]">(Pro)</span>
+            </span>
           </button>
         </div>
       </div>
@@ -467,9 +437,14 @@ const ReviewPage = () => {
           {/* 内容卡片 */}
           <div className="rounded-lg bg-white/80 p-12 shadow-sm backdrop-blur-sm">
             <div className="mb-12">
-              <blockquote className="mb-8 text-lg italic text-gray-700">
-                &ldquo;{currentNote.markText}&rdquo;
-              </blockquote>
+              {currentNote.markText && (
+                <div className="mb-8 flex ">
+                  <div className="mr-3 w-1 bg-gray-300"></div>
+                  <blockquote className="text-lg italic text-gray-700">
+                    &ldquo;{currentNote.markText}&rdquo;
+                  </blockquote>
+                </div>
+              )}
               <div className="leading-relaxed text-gray-800">
                 {currentNote.noteContent}
               </div>
@@ -513,6 +488,16 @@ const ReviewPage = () => {
       <SettingsDialog
         isOpen={showSettingsDialog}
         onClose={() => setShowSettingsDialog(false)}
+      />
+
+      <Modal
+        isOpen={isModalOpen}
+        onConfirm={() => {
+          handleRandomNote();
+          setIsModalOpen(false);
+        }}
+        title="提示"
+        content="所有笔记都已回顾完，将重置回未读状态"
       />
     </div>
   );

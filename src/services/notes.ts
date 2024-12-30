@@ -83,3 +83,7 @@ export async function exportNotesMdService(bookId: string) {
     console.error("下载文件时发生错误:", error);
   }
 }
+
+export async function getRandomReview(): Promise<any> {
+  return await axios.get("/wxread/notes/getRandomReview");
+}
