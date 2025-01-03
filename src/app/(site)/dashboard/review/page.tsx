@@ -371,6 +371,8 @@ const ReviewPage = () => {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [readCount, setReadCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     handleRandomNote();
@@ -381,9 +383,16 @@ const ReviewPage = () => {
       .then((res) => {
         const { code, data, msg } = res;
         if (code === 200) {
-          setCurrentNote(data);
-        } else if (code === 0) {
-          setIsModalOpen(true);
+          const { readCount, totalCount, note, allFinished } = data;
+          if (totalCount === 0) {
+            setCurrentNote(null);
+          } else if (allFinished) {
+            setIsModalOpen(true);
+          } else {
+            setCurrentNote(note);
+            setReadCount(readCount);
+            setTotalCount(totalCount);
+          }
         }
       })
       .finally(() => {
@@ -410,7 +419,12 @@ const ReviewPage = () => {
       }}
     >
       {/* 顶部工具栏 */}
-      <div className="mx-auto flex max-w-5xl items-center justify-end p-4">
+      <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-gray-500">
+            回顾进度：{readCount}/{totalCount}
+          </div>
+        </div>
         <div className="flex gap-4">
           <button
             onClick={() => setShowShareDialog(true)}
@@ -497,7 +511,7 @@ const ReviewPage = () => {
           setIsModalOpen(false);
         }}
         title="提示"
-        content="所有笔记都已回顾完，将重置回未读状态"
+        content="所有笔记都已回顾完，已全部重置回未读状态"
       />
     </div>
   );
