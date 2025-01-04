@@ -10,7 +10,9 @@ const BookList = () => {
     getBooks();
   }, []);
   const getBooks = async () => {
-    const response = await fetch("/api/books", {
+    // 在开发环境使用模拟数据
+    const apiUrl = process.env.NODE_ENV === 'development' ? '/api/mock/books' : '/api/books';
+    const response = await fetch(apiUrl, {
       method: "GET",
     });
     if (!response.ok) {
@@ -28,26 +30,38 @@ const BookList = () => {
   };
 
   return (
-    <ul className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-4">
+    <ul className="mx-auto mt-10 grid max-w-6xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
       {books.map((item: any) => (
         <li
           key={item.bookId}
-          className="flex cursor-pointer rounded-lg border border-[#b4b2a7] bg-white p-4 transition-colors hover:bg-[#f8f9fa]"
+          className="group flex cursor-pointer flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md"
           onClick={() => handleBookClick(item.bookId)}
         >
-          <img
-            className="mr-4 h-28 w-20 object-cover"
-            src={item.cover}
-            alt={item.bookName}
-          />
-          <div className="flex flex-1 justify-between">
-            <div className="flex flex-col justify-between">
-              <h2 className="line-clamp-2 overflow-hidden overflow-ellipsis text-left text-sm font-medium">
-                {item.bookName}
-              </h2>
-              <h2 className="text-left text-xs text-gray-500">
-                划线 ({`${item.markCount}) | 想法 (${item.noteCount})`}
-              </h2>
+          <div className="flex">
+            <img
+              className="mr-4 h-32 w-24 rounded object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
+              src={item.cover}
+              alt={item.bookName}
+            />
+            <div className="flex flex-1 flex-col justify-between">
+              <div>
+                <h2 className="line-clamp-2 text-base font-medium text-gray-900">
+                  {item.bookName}
+                </h2>
+                <p className="mt-2 text-sm text-gray-500">
+                  最后阅读时间：{item.lastReadTime || '未开始阅读'}
+                </p>
+              </div>
+              <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                <span className="flex items-center">
+                  <span className="mr-1">划线</span>
+                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600">{item.markCount}</span>
+                </span>
+                <span className="flex items-center">
+                  <span className="mr-1">想法</span>
+                  <span className="rounded-full bg-green-50 px-2 py-0.5 text-green-600">{item.noteCount}</span>
+                </span>
+              </div>
             </div>
           </div>
         </li>

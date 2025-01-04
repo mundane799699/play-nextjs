@@ -7,6 +7,7 @@ import html2canvas from "html2canvas";
 import Image from "next/image";
 import { getRandomReview } from "@/services/notes";
 import Modal from "@/components/DashBoard/Modal";
+import { useAuth } from "@/context/AuthContext";
 
 interface Note {
   reviewId: string;
@@ -116,10 +117,17 @@ const SettingsDialog = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
+  const { user } = useAuth();
   const [selectedBook, setSelectedBook] = useState("全部笔记");
   const [reviewCount, setReviewCount] = useState("5");
-  const [email, setEmail] = useState("user@example.com");
+  const [email, setEmail] = useState("");
   const [showMembership, setShowMembership] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
 
   if (!isOpen) return null;
 
@@ -141,7 +149,7 @@ const SettingsDialog = ({
         <div className="relative w-[90%] max-w-md rounded-lg bg-white shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-medium">邮箱回顾（Beta）</h2>
+            <h2 className="text-lg font-medium">邮箱回顾（开发中）</h2>
             <button
               onClick={onClose}
               className="rounded-full p-1 hover:bg-gray-100"
@@ -409,71 +417,66 @@ const ReviewPage = () => {
   }
 
   return (
-    <div
-      className="bg-stone-100 p-4"
-      style={{
-        backgroundImage: `
-          linear-gradient(rgba(245, 242, 236, 0.9), rgba(245, 242, 236, 0.9)),
-          url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='none' stroke='%23D2C6B5' stroke-width='0.5'/%3E%3C/svg%3E")
-        `,
-      }}
-    >
+    <div className="p-4">
       {/* 顶部工具栏 */}
       <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
         <div className="flex items-center gap-2">
-          <div className="text-sm text-gray-500">
+          <div className="text-xs sm:text-sm text-gray-500">
             回顾进度：{readCount}/{totalCount}
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-2 sm:gap-4">
           <button
             onClick={() => setShowShareDialog(true)}
-            className="flex items-center space-x-1 text-gray-600 transition hover:text-gray-900"
+            className="flex items-center p-1.5 sm:p-0 text-gray-600 transition hover:text-gray-900"
           >
-            <Share2 className="h-5 w-5" />
-            <span>分享</span>
+            <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">分享</span>
           </button>
           <button
             onClick={() => setShowSettingsDialog(true)}
-            className="flex items-center space-x-1 text-gray-600 transition hover:text-gray-900"
+            className="flex items-center p-1.5 sm:p-0 text-gray-600 transition hover:text-gray-900"
           >
-            <Mail className="h-5 w-5" />
-            <span>
-              邮箱回顾<span className="ml-1 text-[#ff6b24]">(Pro)</span>
+            <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">
+              邮箱回顾<span className="ml-1 text-[#ff6b24]">(开发中)</span>
             </span>
           </button>
         </div>
       </div>
 
       {/* 主要内容区 */}
-      <div className="flex flex-1 items-center justify-center px-8 md:px-16 lg:px-32">
+      <div className="flex flex-1 items-center justify-center px-1 sm:px-8 md:px-16 lg:px-32">
         <div className="mx-auto w-full max-w-5xl">
           {/* 内容卡片 */}
-          <div className="rounded-lg bg-white/80 p-12 shadow-sm backdrop-blur-sm">
-            <div className="mb-12">
+          <div className="rounded-lg bg-white p-4 sm:p-6 md:p-8 shadow-sm">
+            <div className="flex flex-col">
+              {/* 标记的文本 */}
               {currentNote.markText && (
-                <div className="mb-8 flex ">
-                  <div className="mr-3 w-1 bg-gray-300"></div>
-                  <blockquote className="text-lg italic text-gray-700">
-                    &ldquo;{currentNote.markText}&rdquo;
+                <div className="relative pl-4 mb-4 sm:mb-6">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
+                  <blockquote className="text-sm sm:text-lg font-medium text-gray-700">
+                    {currentNote.markText}
                   </blockquote>
                 </div>
               )}
-              <div className="leading-relaxed text-gray-800">
-                {currentNote.noteContent}
-              </div>
-              {currentNote.chapterName && (
-                <div className="mt-4 text-sm text-gray-500">
-                  —— {currentNote.chapterName}
-                </div>
-              )}
-            </div>
 
-            <div className="text-right">
-              <div className="flex items-center justify-end gap-2 text-gray-600">
-                <span className="text-sm">{currentNote.bookName}</span>
-                <span className="text-gray-400">|</span>
-                <span className="text-sm">
+              {/* 笔记内容 */}
+              <div>
+                <div className="text-xs sm:text-base leading-relaxed text-gray-800">
+                  {currentNote.noteContent}
+                </div>
+                {currentNote.chapterName && (
+                  <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">
+                    {currentNote.chapterName}
+                  </div>
+                )}
+              </div>
+
+              {/* 书籍信息 */}
+              <div className="flex items-center justify-between mt-4 sm:mt-6 pt-3 sm:pt-4 text-xs sm:text-sm border-t border-gray-100">
+                <span className="font-medium text-gray-900">{currentNote.bookName}</span>
+                <span className="text-gray-500">
                   {dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD")}
                 </span>
               </div>
@@ -481,10 +484,10 @@ const ReviewPage = () => {
           </div>
 
           {/* 随机按钮 */}
-          <div className="mt-8 flex items-center justify-center">
+          <div className="mt-4 sm:mt-6 flex items-center justify-center">
             <button
               onClick={handleRandomNote}
-              className="flex items-center gap-2 rounded-full bg-white/80 px-6 py-2 shadow-sm transition-all hover:bg-white"
+              className="flex items-center gap-2 rounded-full bg-white px-6 py-2 text-xs sm:text-sm shadow-sm transition-all hover:bg-white"
             >
               <Shuffle className="h-4 w-4" />
               随机回顾

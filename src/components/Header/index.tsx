@@ -271,7 +271,7 @@ const Header = () => {
                 <button
                   aria-label="theme toggler"
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="flex h-8 w-8 items-center justify-center text-body-color duration-300 dark:text-white"
+                  className="hidden flex h-8 w-8 items-center justify-center text-body-color duration-300 dark:text-white"
                 >
                   <span>
                     <svg
@@ -325,13 +325,13 @@ const Header = () => {
                       <>
                         <Link
                           href="/signin"
-                          className="px-7 py-3 text-base font-medium text-dark hover:opacity-70 dark:text-white"
+                          className="px-5 py-2 text-sm font-medium text-dark hover:opacity-70 dark:text-white"
                         >
                           登录
                         </Link>
                         <Link
                           href="/signup"
-                          className="rounded-lg bg-primary px-6 py-3 text-base font-medium text-white duration-300 ease-in-out hover:bg-primary/90 dark:bg-white/10 dark:hover:bg-white/20"
+                          className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-primary/90 dark:bg-white/10 dark:hover:bg-white/20"
                         >
                           注册
                         </Link>
@@ -340,7 +340,7 @@ const Header = () => {
                       <>
                         <Link
                           href="/signin"
-                          className={`px-7 py-3 text-base font-medium hover:opacity-70 ${
+                          className={`px-5 py-2 text-sm font-medium hover:opacity-70 ${
                             sticky ? "text-dark dark:text-white" : "text-white"
                           }`}
                         >
@@ -348,7 +348,7 @@ const Header = () => {
                         </Link>
                         <Link
                           href="/signup"
-                          className={`rounded-lg px-6 py-3 text-base font-medium text-white duration-300 ease-in-out ${
+                          className={`rounded-lg px-5 py-2 text-sm font-medium text-white duration-300 ease-in-out ${
                             sticky
                               ? "bg-primary hover:bg-primary/90 dark:bg-white/10 dark:hover:bg-white/20"
                               : "bg-white/10 hover:bg-white/20"
