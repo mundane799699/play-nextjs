@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Share2, Mail, Shuffle, Settings, X } from "lucide-react";
+import { Share2, Mail, Shuffle, Settings, X, Copy, Check } from "lucide-react";
 import dayjs from "dayjs";
 import html2canvas from "html2canvas";
 import Image from "next/image";
@@ -381,6 +381,7 @@ const ReviewPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [readCount, setReadCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     handleRandomNote();
@@ -408,6 +409,20 @@ const ReviewPage = () => {
       });
   };
 
+  const handleCopy = async () => {
+    if (!currentNote) return;
+    
+    const textToCopy = `${currentNote.markText ? currentNote.markText + '\n\n' : ''}${currentNote.noteContent}\n\n${currentNote.chapterName || ''}\n${currentNote.bookName}`;
+    
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">加载中...</div>;
   }
@@ -427,13 +442,6 @@ const ReviewPage = () => {
         </div>
         <div className="flex gap-2 sm:gap-4">
           <button
-            onClick={() => setShowShareDialog(true)}
-            className="flex items-center p-1.5 sm:p-0 text-gray-600 transition hover:text-gray-900"
-          >
-            <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">分享</span>
-          </button>
-          <button
             onClick={() => setShowSettingsDialog(true)}
             className="flex items-center p-1.5 sm:p-0 text-gray-600 transition hover:text-gray-900"
           >
@@ -449,7 +457,34 @@ const ReviewPage = () => {
       <div className="flex flex-1 items-center justify-center px-1 sm:px-8 md:px-16 lg:px-32">
         <div className="mx-auto w-full max-w-5xl">
           {/* 内容卡片 */}
-          <div className="rounded-lg bg-white p-4 sm:p-6 md:p-8 shadow-sm">
+          <div className="relative rounded-lg bg-white p-4 sm:p-6 md:p-8 shadow-sm">
+            <div className="absolute top-4 right-4 flex gap-2">
+              <button
+                onClick={() => setShowShareDialog(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group inline-flex items-center justify-center relative"
+                aria-label="分享"
+              >
+                <Share2 className="h-5 w-5" strokeWidth={1.5} />
+                <div className="absolute inset-0 cursor-pointer" onClick={() => setShowShareDialog(true)} />
+                <span className="absolute hidden group-hover:block -top-8 -left-3 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  分享笔记
+                </span>
+              </button>
+              <button
+                onClick={handleCopy}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group inline-flex items-center justify-center relative"
+                aria-label={isCopied ? "已复制" : "复制内容"}
+              >
+                {isCopied ? 
+                  <Check className="h-5 w-5" strokeWidth={1.5} /> : 
+                  <Copy className="h-5 w-5" strokeWidth={1.5} />
+                }
+                <div className="absolute inset-0 cursor-pointer" onClick={handleCopy} />
+                <span className="absolute hidden group-hover:block -top-8 -left-3 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  {isCopied ? '已复制!' : '复制内容'}
+                </span>
+              </button>
+            </div>
             <div className="flex flex-col">
               {/* 标记的文本 */}
               {currentNote.markText && (
