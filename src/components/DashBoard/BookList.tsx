@@ -10,9 +10,7 @@ const BookList = () => {
     getBooks();
   }, []);
   const getBooks = async () => {
-    // 在开发环境使用模拟数据
-    const apiUrl = process.env.NODE_ENV === 'development' ? '/api/mock/books' : '/api/books';
-    const response = await fetch(apiUrl, {
+    const response = await fetch("/api/books", {
       method: "GET",
     });
     if (!response.ok) {

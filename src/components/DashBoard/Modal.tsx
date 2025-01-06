@@ -20,7 +20,7 @@ export default function Modal({
         <div className="flex justify-end space-x-4">
           <button
             onClick={onConfirm}
-            className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+            className="rounded bg-orange-400 px-4 py-2 text-white hover:bg-orange-500"
           >
             确定
           </button>

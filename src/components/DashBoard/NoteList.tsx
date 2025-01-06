@@ -32,66 +32,21 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
 
   const getNotes = useCallback(async (bookId: string) => {
-    // 本地开发时使用模拟数据
-    if (process.env.NODE_ENV === 'development') {
-      const mockData = {
-        code: 200,
-        rows: [
-          {
-            reviewId: '1',
-            bookName: '测试书籍1',
-            chapterName: '第一章',
-            noteContent: '这是一条测试笔记内容，用于本地开发时查看UI效果。',
-            markText: '这是标记的文本内容',
-            noteTime: Date.now()
-          },
-          {
-            reviewId: '2',
-            bookName: '测试书籍1',
-            chapterName: '第二章',
-            noteContent: '第二条测试笔记内容，包含更多的文字来测试UI的展示效果。这条笔记稍微长一些，可以测试长文本的显示效果。',
-            markText: '这是另一段标记的文本',
-            noteTime: Date.now() - 86400000 // 前一天
-          }
-        ],
-        bookName: '测试书籍1',
-        total: 10
-      };
-      
-      const filteredRows = mockData.rows.filter((item: any) => item.markText);
-      setNotes(filteredRows);
-      setBookName(mockData.bookName);
-      setTotalNotes(mockData.total || filteredRows.length);
-      return;
-    }
-
-    // 生产环境使用真实API
     const response = await fetch(`/api/notes?bookId=${bookId}`, {
-
       method: "GET",
-
     });
 
     if (!response.ok) {
-
       console.log(response.statusText);
-
       return;
-
     }
 
     const { code, rows, bookName, total } = await response.json();
-
     if (code === 200) {
-
       const filteredRows = rows.filter((item: any) => item.markText);
-
       setNotes(filteredRows);
-
       setBookName(bookName);
-
       setTotalNotes(total || filteredRows.length);
-
     }
 
   }, []);
@@ -99,9 +54,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
 
   useEffect(() => {
-
     getNotes(bookId);
-
   }, []);
 
 
