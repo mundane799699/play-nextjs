@@ -66,7 +66,7 @@ const ShareDialog = ({
                 {note.markText}
               </div>
               <div className="text-sm opacity-80">
-                /{note.bookName}
+                {note.bookName}
                 <br />
                 {note.chapterName}
               </div>
