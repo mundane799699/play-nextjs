@@ -82,9 +82,7 @@ const ReviewPage = () => {
             className="flex items-center p-1 text-gray-600 transition hover:text-gray-900 md:p-2"
           >
             <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">
-              邮箱回顾<span className="ml-1 text-[#ff6b24]">(开发中)</span>
-            </span>
+            <span className="hidden sm:inline">邮箱回顾</span>
           </button>
           <button
             onClick={() => setShowShareDialog(true)}

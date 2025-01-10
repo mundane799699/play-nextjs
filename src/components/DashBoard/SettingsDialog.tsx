@@ -3,6 +3,10 @@ import MembershipDialog from "./MembershipDialog";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { getSubscriptionByUserId } from "@/services/email";
+import { EmailSubscription } from "@/types/emailSubscription";
+import { saveSubscription } from "@/services/email";
+import toast from "react-hot-toast";
 
 // Settings Dialog Component
 const SettingsDialog = ({
@@ -12,17 +16,24 @@ const SettingsDialog = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const { user } = useAuth();
   const [selectedBook, setSelectedBook] = useState("全部笔记");
   const [reviewCount, setReviewCount] = useState("5");
   const [email, setEmail] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   const [showMembership, setShowMembership] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(0);
 
   useEffect(() => {
-    if (user?.email) {
-      setEmail(user.email);
-    }
-  }, [user]);
+    getSubscriptionByUserId().then((res: any) => {
+      const { code, data } = res;
+      if (code === 200) {
+        const { email, sendTime, subscriptionStatus } = data;
+        setEmail(email);
+        setSelectedTime(sendTime);
+        setSubscriptionStatus(subscriptionStatus);
+      }
+    });
+  }, []);
 
   if (!isOpen) return null;
 
@@ -32,9 +43,24 @@ const SettingsDialog = ({
     { value: "20", label: "20条/天" },
   ];
 
+
   const handleSave = () => {
-    // TODO: Save settings
-    onClose();
+    saveSubscription({
+      email,
+      sendTime: selectedTime,
+      subscriptionStatus,
+    })
+      .then((res: any) => {
+        const { code } = res;
+        if (code === 200) {
+          toast.success("保存成功");
+        } else {
+          toast.error("保存失败");
+        }
+      })
+      .finally(() => {
+        onClose();
+      });
   };
 
   return (
@@ -44,7 +70,7 @@ const SettingsDialog = ({
         <div className="relative w-[90%] max-w-md rounded-lg bg-white shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-medium">邮箱回顾（开发中）</h2>
+            <h2 className="text-lg font-medium">邮箱回顾</h2>
             <button
               onClick={onClose}
               className="rounded-full p-1 hover:bg-gray-100"
@@ -55,8 +81,33 @@ const SettingsDialog = ({
 
           {/* Content */}
           <div className="space-y-6 p-6">
+            {/* Subscription Status */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">订阅状态</span>
+              <button
+                onClick={() => {
+                  setSubscriptionStatus(subscriptionStatus === 1 ? 0 : 1);
+                }}
+                className={`
+                  relative inline-flex h-6 w-11 items-center rounded-full
+                  ${subscriptionStatus === 1 ? "bg-orange-600" : "bg-gray-200"}
+                  transition-colors duration-200 ease-in-out focus:outline-none
+                `}
+              >
+                <span
+                  className={`
+                    ${subscriptionStatus === 1 ? "translate-x-6" : "translate-x-1"}
+                    inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out
+                  `}
+                />
+                <span className="sr-only">
+                  {subscriptionStatus === 1 ? "取消订阅" : "开启订阅"}
+                </span>
+              </button>
+            </div>
+
             {/* Review Range */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="block text-sm font-medium">回顾范围</label>
               <select
                 value={selectedBook}
@@ -67,10 +118,10 @@ const SettingsDialog = ({
                 <option value="少有人走的路">少有人走的路</option>
                 <option value="认知觉醒">认知觉醒</option>
               </select>
-            </div>
+            </div> */}
 
             {/* Review Count */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="block text-sm font-medium">回顾数量</label>
               <select
                 value={reviewCount}
@@ -83,7 +134,7 @@ const SettingsDialog = ({
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {/* Email Settings */}
             <div className="space-y-2">
@@ -97,18 +148,29 @@ const SettingsDialog = ({
               />
             </div>
 
+            {/* Time Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">发送时间</label>
+              <input
+                type="time"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                className="w-full rounded-md border px-3 py-2"
+              />
+            </div>
+
             {/* Pro Button */}
-            <button
+            {/* <button
               onClick={() => setShowMembership(true)}
               className="w-full rounded-md bg-[#ff6b24] py-3 font-medium text-white transition hover:bg-[#ff6b24]/90"
             >
               8￥开通会员立享邮箱回顾
-            </button>
+            </button> */}
 
             {/* Description */}
-            <p className="text-center text-sm text-gray-500">
+            {/* <p className="text-center text-sm text-gray-500">
               因为邮箱发送需要服务器成本，故收取成本费用，后续为会员用户提供更多服务，感谢支持
-            </p>
+            </p> */}
           </div>
 
           {/* Footer */}
