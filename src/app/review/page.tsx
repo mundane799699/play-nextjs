@@ -9,6 +9,7 @@ import { Share2, Copy, Check, Shuffle, Image, Settings, ArrowUp } from "lucide-r
 import dayjs from "dayjs";
 import Modal from "@/components/dashboard/Modal";
 import SettingsDialog from "@/components/dashboard/SettingsDialog";
+import { sampleQuotes } from "@/data/quotes";
 
 const backgrounds = [
   "/images/backgrounds/bg1.png",
@@ -39,6 +40,7 @@ const Page = () => {
     const savedBackground = localStorage.getItem("background_index");
     return savedBackground ? parseInt(savedBackground, 10) : 0;
   });
+  const [quoteIndex, setQuoteIndex] = useState(0);
 
   // 更新背景
   const handleBackgroundChange = (index: number) => {
@@ -70,42 +72,32 @@ const Page = () => {
       if (code === 200) {
         setUser(user);
         handleRandomNote();
+      } else {
+        // 如果未登录，设置一个随机的名言作为当前笔记
+        const randomIndex = Math.floor(Math.random() * sampleQuotes.length);
+        setQuoteIndex(randomIndex);
+        setCurrentNote(sampleQuotes[randomIndex]);
+        setReadCount(randomIndex + 1);
+        setTotalCount(sampleQuotes.length);
+        setIsLoading(false);  
       }
     });
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // 只有在有用户且加载完成时才处理键盘事件
-      if (!user || isLoading) return;
-      
-      // 右方向键触发随机回顾
-      if (event.key === 'ArrowRight') {
-        handleRandomNote();
-      }
-      // 左方向键触发上一个（如果有历史记录）
-      else if (event.key === 'ArrowLeft' && historyIndex > 0) {
-        handlePreviousNote();
-      }
-    };
-
-    // 添加键盘事件监听
-    window.addEventListener('keydown', handleKeyDown);
-
-    // 清理函数
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [user, isLoading, historyIndex]); // 依赖项包含所有需要的状态
-
-  const signIn = () => {
-    browser.tabs.create({
-      url: `${import.meta.env.VITE_BASE_WEB}/signin`,
-      active: true,
-    });
-  };
-
   const handleRandomNote = () => {
+    if (!user) {
+      // 未登录状态下，随机显示一条名言
+      let newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * sampleQuotes.length);
+      } while (newIndex === quoteIndex);
+      setQuoteIndex(newIndex);
+      setCurrentNote(sampleQuotes[newIndex]);
+      setReadCount(newIndex + 1);
+      return;
+    }
+
+    // 已登录状态下的原有逻辑
     getRandomReview()
       .then((res) => {
         const { code, data, msg } = res;
@@ -160,25 +152,6 @@ const Page = () => {
     });
   };
 
-  if (!user) {
-    return (
-      <div className="bg-orange-100 flex flex-col justify-center items-center h-screen">
-        <button
-          onClick={signIn}
-          className="w-40 text-lg font-bold text-white bg-orange-400 hover:bg-orange-500 rounded-lg border p-4 mt-10"
-        >
-          去登录
-        </button>
-        <button
-          onClick={() => window.location.reload()}
-          className="w-40 text-lg font-bold text-white bg-orange-400 hover:bg-orange-500 rounded-lg border p-4"
-        >
-          刷新页面
-        </button>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">加载中...</div>;
   }
@@ -222,11 +195,11 @@ const Page = () => {
                 ? "text-[#006D11]/90"
                 : "text-white/90"
             }`}>
-              回顾进度：{readCount}/{totalCount}
+              {user ? `回顾进度：${readCount}/${totalCount}` : `进度：${readCount}/${totalCount}`}
             </div>
 
             {/* 右上角按钮组 */}
-            <div className={`absolute top-[50px] right-8 flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+            <div className={`absolute top-[40px] right-8 flex items-center space-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
               currentBackgroundIndex === 0
                 ? "text-gray-500"
                 : currentBackgroundIndex === 2
@@ -256,7 +229,7 @@ const Page = () => {
             {/* 内容卡片 */}
             {currentBackgroundIndex === 0 ? (
               // 默认背景下的卡片样式
-              <div className="w-full h-[360px] overflow-auto rounded-lg bg-white/80 p-12 shadow-sm backdrop-blur-sm">
+              <div className="w-full h-[360px] mt-8 overflow-auto rounded-lg bg-white/80 p-8 shadow-sm backdrop-blur-sm">
                 <div className="h-full flex flex-col">
                   {/* 笔记内容区：flex-1 自动占据剩余空间 */}
                   <div className="flex-1">
@@ -267,7 +240,7 @@ const Page = () => {
                     ) : currentNote ? (
                       <div className="space-y-4">
                         {currentNote.markText && currentNote.markText.trim() !== "" && (
-                          <div className="text-gray-600 italic">{currentNote.markText}</div>
+                          <div className="text-gray-600">{currentNote.markText}</div>
                         )}
                         <div className="text-gray-800 text-lg leading-relaxed">
                           {currentNote.noteContent}
@@ -284,14 +257,16 @@ const Page = () => {
 
                   {/* 书籍信息 */}
                   <div className="flex items-center justify-between mt-6 pt-4 text-sm border-t border-[#F0F0F0]/60">
-                    <a
-                      href={`https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-['Noto Serif SC',serif] text-[#262626] hover:text-[#FF725F] transition-colors cursor-pointer tracking-wide"
-                    >
-                      {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
-                    </a>
+                    <div className="flex flex-col space-y-2">
+                      <a
+                        href={user ? `https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}` : "https://readecho.cn"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-['Noto Serif SC',serif] text-[#262626] hover:text-[#FF725F] transition-colors cursor-pointer tracking-wide"
+                      >
+                        {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
+                      </a>
+                    </div>
                     <span className="text-[#8F8F8F] font-light tracking-wider">
                       {currentNote?.noteTime
                         ? dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD")
@@ -367,7 +342,7 @@ const Page = () => {
 
                   <div className="flex flex-col items-center space-y-2">
                     <a
-                      href={`https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}`}
+                      href={user ? `https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}` : "https://readecho.cn"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`text-base ${
@@ -440,23 +415,23 @@ const Page = () => {
                   上一个
                 </button>
               )}
-              <button
-                onClick={handleRandomNote}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-colors ${
-                  currentBackgroundIndex === 0
-                    ? "bg-[#FF725F] text-white hover:bg-[#FF725F]/90"
-                    : currentBackgroundIndex === 3
-                    ? "bg-white/5 text-white/70 hover:bg-white/10 backdrop-blur-sm"
-                    : currentBackgroundIndex === 4
-                    ? "bg-[#2C3333]/10 text-[#2C3333] hover:bg-[#2C3333]/20 backdrop-blur-sm"
-                    : currentBackgroundIndex === 5
-                    ? "bg-[#2D5A27]/10 text-[#2D5A27] hover:bg-[#2D5A27]/20 backdrop-blur-sm"
-                    : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
-                }`}
-              >
-                <Shuffle className="h-4 w-4" />
-                随机回顾
-              </button>
+              <div className="flex flex-col items-center space-y-4 mt-8">
+                <button
+                  onClick={handleRandomNote}
+                  className="px-6 py-2 bg-[#FF725F] text-white rounded-full hover:bg-[#FF8F7F] transition-colors flex items-center space-x-2"
+                >
+                  <Shuffle className="w-4 h-4" />
+                  <span>随机回顾</span>
+                </button>
+                {!user && (
+                  <a
+                    href="http://readecho.cn/signin"
+                    className="text-[#FF725F] hover:text-[#FF8F7F] transition-colors cursor-pointer text-sm"
+                  >
+                    登录 Readecho
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 

@@ -11,6 +11,7 @@ import ToasterContext from "./api/contex/ToasetContex";
 import { useEffect, useState } from "react";
 import PreLoader from "@/components/Common/PreLoader";
 import { AuthProvider } from "@/context/AuthContext";
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({
   children,
@@ -18,6 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [loading, setLoading] = useState<boolean>(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
@@ -42,7 +44,7 @@ export default function RootLayout({
               defaultTheme="light"
             >
               <ToasterContext />
-              <Header />
+              {pathname !== '/review' && <Header />}
               {children}
               {/* <Footer /> */}
               <ScrollToTop />
