@@ -6,4 +6,5 @@ export interface Note {
   noteContent: string;
   markText: string;
   noteTime: number;
+  bookId: string;
 }
