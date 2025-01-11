@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import ShareDialog from "@/components/dashboard/ShareDialog";
+import ShareDialog from "@/components/DashBoard/ShareDialog";
 import { fetchUserInfoService } from "@/services/login";
 import { getRandomReview } from "@/services/notes";
 import { Note } from "@/types/note";
 import { Share2, Copy, Check, Shuffle, Image, Settings, ArrowUp } from "lucide-react";
 import dayjs from "dayjs";
-import Modal from "@/components/dashboard/Modal";
-import SettingsDialog from "@/components/dashboard/SettingsDialog";
+import Modal from "@/components/DashBoard/Modal";
+import SettingsDialog from "@/components/DashBoard/SettingsDialog";
 import { sampleQuotes } from "@/data/quotes";
 
 const backgrounds = [
