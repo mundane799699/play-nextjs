@@ -57,6 +57,10 @@ const SettingsDialog = ({
       toast.error("邮箱格式不正确");
       return;
     }
+    if (!selectedTime) {
+      toast.error("请先选择发送时间");
+      return;
+    }
     saveSubscription({
       email,
       sendTime: selectedTime,
