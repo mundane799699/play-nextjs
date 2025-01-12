@@ -24,15 +24,15 @@ const SettingsDialog = ({
   const [subscriptionStatus, setSubscriptionStatus] = useState(0);
 
   useEffect(() => {
-    getSubscriptionByUserId().then((res: any) => {
-      const { code, data } = res;
-      if (code === 200) {
-        const { email, sendTime, subscriptionStatus } = data;
-        setEmail(email);
-        setSelectedTime(sendTime);
-        setSubscriptionStatus(subscriptionStatus);
-      }
-    });
+    // getSubscriptionByUserId().then((res: any) => {
+    //   const { code, data } = res;
+    //   if (code === 200) {
+    //     const { email, sendTime, subscriptionStatus } = data;
+    //     setEmail(email);
+    //     setSelectedTime(sendTime);
+    //     setSubscriptionStatus(subscriptionStatus);
+    //   }
+    // });
   }, []);
 
   if (!isOpen) return null;
@@ -43,24 +43,24 @@ const SettingsDialog = ({
     { value: "20", label: "20条/天" },
   ];
 
-
   const handleSave = () => {
-    saveSubscription({
-      email,
-      sendTime: selectedTime,
-      subscriptionStatus,
-    })
-      .then((res: any) => {
-        const { code } = res;
-        if (code === 200) {
-          toast.success("保存成功");
-        } else {
-          toast.error("保存失败");
-        }
-      })
-      .finally(() => {
-        onClose();
-      });
+    onClose();
+    // saveSubscription({
+    //   email,
+    //   sendTime: selectedTime,
+    //   subscriptionStatus,
+    // })
+    //   .then((res: any) => {
+    //     const { code } = res;
+    //     if (code === 200) {
+    //       toast.success("保存成功");
+    //     } else {
+    //       toast.error("保存失败");
+    //     }
+    //   })
+    //   .finally(() => {
+    //     onClose();
+    //   });
   };
 
   return (
