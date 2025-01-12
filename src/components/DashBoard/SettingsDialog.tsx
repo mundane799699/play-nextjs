@@ -43,7 +43,20 @@ const SettingsDialog = ({
     { value: "20", label: "20条/天" },
   ];
 
+  const validateEmailFormat = (email: string) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  };
+
   const handleSave = () => {
+    if (!email) {
+      toast.error("请先输入邮箱");
+      return;
+    }
+    if (!validateEmailFormat(email)) {
+      toast.error("邮箱格式不正确");
+      return;
+    }
     saveSubscription({
       email,
       sendTime: selectedTime,
@@ -67,6 +80,11 @@ const SettingsDialog = ({
       toast.error("请先输入邮箱");
       return;
     }
+    if (!validateEmailFormat(email)) {
+      toast.error("邮箱格式不正确");
+      return;
+    }
+
     testSendEmail(email).then((res: any) => {
       const { code } = res;
       if (code === 200) {
