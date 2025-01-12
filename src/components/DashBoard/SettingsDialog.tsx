@@ -3,7 +3,7 @@ import MembershipDialog from "./MembershipDialog";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getSubscriptionByUserId } from "@/services/email";
+import { getSubscriptionByUserId, testSendEmail } from "@/services/email";
 import { EmailSubscription } from "@/types/emailSubscription";
 import { saveSubscription } from "@/services/email";
 import toast from "react-hot-toast";
@@ -24,15 +24,15 @@ const SettingsDialog = ({
   const [subscriptionStatus, setSubscriptionStatus] = useState(0);
 
   useEffect(() => {
-    // getSubscriptionByUserId().then((res: any) => {
-    //   const { code, data } = res;
-    //   if (code === 200) {
-    //     const { email, sendTime, subscriptionStatus } = data;
-    //     setEmail(email);
-    //     setSelectedTime(sendTime);
-    //     setSubscriptionStatus(subscriptionStatus);
-    //   }
-    // });
+    getSubscriptionByUserId().then((res: any) => {
+      const { code, data } = res;
+      if (code === 200) {
+        const { email, sendTime, subscriptionStatus } = data;
+        setEmail(email);
+        setSelectedTime(sendTime);
+        setSubscriptionStatus(subscriptionStatus);
+      }
+    });
   }, []);
 
   if (!isOpen) return null;
@@ -44,23 +44,35 @@ const SettingsDialog = ({
   ];
 
   const handleSave = () => {
-    onClose();
-    // saveSubscription({
-    //   email,
-    //   sendTime: selectedTime,
-    //   subscriptionStatus,
-    // })
-    //   .then((res: any) => {
-    //     const { code } = res;
-    //     if (code === 200) {
-    //       toast.success("保存成功");
-    //     } else {
-    //       toast.error("保存失败");
-    //     }
-    //   })
-    //   .finally(() => {
-    //     onClose();
-    //   });
+    saveSubscription({
+      email,
+      sendTime: selectedTime,
+      subscriptionStatus,
+    })
+      .then((res: any) => {
+        const { code } = res;
+        if (code === 200) {
+          toast.success("保存成功");
+        } else {
+          toast.error("保存失败");
+        }
+      })
+      .finally(() => {
+        onClose();
+      });
+  };
+
+  const testSend = () => {
+    if (!email) {
+      toast.error("请先输入邮箱");
+      return;
+    }
+    testSendEmail(email).then((res: any) => {
+      const { code } = res;
+      if (code === 200) {
+        toast.success("发送成功");
+      }
+    });
   };
 
   return (
@@ -90,7 +102,7 @@ const SettingsDialog = ({
                 }}
                 className={`
                   relative inline-flex h-6 w-11 items-center rounded-full
-                  ${subscriptionStatus === 1 ? "bg-orange-600" : "bg-gray-200"}
+                  ${subscriptionStatus === 1 ? "bg-primary" : "bg-gray-200"}
                   transition-colors duration-200 ease-in-out focus:outline-none
                 `}
               >
@@ -159,6 +171,15 @@ const SettingsDialog = ({
               />
             </div>
 
+            <div className="flex items-center justify-end">
+              <button
+                onClick={testSend}
+                className="rounded-md bg-primary px-4 py-2 font-medium text-white transition hover:bg-primary/90"
+              >
+                试发一封
+              </button>
+            </div>
+
             {/* Pro Button */}
             {/* <button
               onClick={() => setShowMembership(true)}
@@ -183,7 +204,7 @@ const SettingsDialog = ({
             </button>
             <button
               onClick={handleSave}
-              className="rounded-md bg-[#14161a] px-4 py-2 text-white transition hover:bg-[#14161a]/90"
+              className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90"
             >
               保存
             </button>

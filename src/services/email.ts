@@ -8,3 +8,7 @@ export async function getSubscriptionByUserId(): Promise<any> {
 export async function saveSubscription(email: EmailSubscription): Promise<any> {
   return await axios.post("/wxread/subscription/save", email);
 }
+
+export async function testSendEmail(email: string): Promise<any> {
+  return await axios.post("/wxread/subscription/test", { email });
+}
