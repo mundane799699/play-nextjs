@@ -120,7 +120,7 @@ const Page = () => {
   const handleCopy = async () => {
     if (!currentNote) return;
 
-    const textToCopy = `${currentNote.markText ? currentNote.markText + "\n\n" : ""}${currentNote.noteContent}\n\n${currentNote.chapterName || ""}\n${currentNote.bookName}`;
+    const textToCopy = `${currentNote.markText || ""}\n${currentNote.noteContent || ""}\n${currentNote.chapterName || ""}\n${currentNote.bookName || ""}`;
 
     try {
       await navigator.clipboard.writeText(textToCopy);
