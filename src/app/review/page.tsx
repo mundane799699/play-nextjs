@@ -5,6 +5,7 @@ import ShareDialog from "@/components/DashBoard/ShareDialog";
 import { fetchUserInfoService } from "@/services/login";
 import { getRandomReview } from "@/services/notes";
 import { Note } from "@/types/note";
+import Link from "next/link";
 import {
   Share2,
   Copy,
@@ -17,6 +18,9 @@ import {
 import dayjs from "dayjs";
 import Modal from "@/components/DashBoard/Modal";
 import SettingsDialog from "@/components/DashBoard/SettingsDialog";
+import { demoNotes } from "@/data/demoNotes";
+import { useSession } from "next-auth/react";
+import { setToken } from "@/utils/user-token";
 
 const backgrounds = [
   "/images/backgrounds/bg1.png",
@@ -30,6 +34,7 @@ const backgrounds = [
 console.log("Available backgrounds:", backgrounds);
 
 const Page = () => {
+  const { data: session } = useSession();
   const [user, setUser] = useState(null);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [noteHistory, setNoteHistory] = useState<Note[]>([]);
@@ -43,17 +48,10 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(dayjs().format("HH:mm"));
   const [currentBackgroundIndex, setCurrentBackgroundIndex] = useState(() => {
-    // 从 localStorage 加载上次保存的背景设置
     const savedBackground = localStorage.getItem("background_index");
     return savedBackground ? parseInt(savedBackground, 10) : 0;
   });
   const [quoteIndex, setQuoteIndex] = useState(0);
-
-  // 更新背景
-  const handleBackgroundChange = (index: number) => {
-    setCurrentBackgroundIndex(index);
-    localStorage.setItem("background_index", index.toString());
-  };
 
   useEffect(() => {
     console.log("Current background index:", currentBackgroundIndex);
@@ -64,7 +62,6 @@ const Page = () => {
     const timer = setInterval(() => {
       setCurrentTime(dayjs().format("HH:mm"));
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -72,63 +69,146 @@ const Page = () => {
     localStorage.setItem("background_index", currentBackgroundIndex.toString());
   }, [currentBackgroundIndex]);
 
+  // 处理登录状态和数据获取
   useEffect(() => {
-    // 获取用户信息
-    fetchUserInfoService().then((res) => {
-      const { user, code } = res;
-      if (code === 200) {
-        setUser(user);
-        handleRandomNote();
+    const initializeData = async () => {
+      console.log('=== Debug Logs ===');
+      console.log('Session:', session);
+      console.log('Access Token:', session?.user?.accessToken);
+      
+      if (session?.user?.accessToken) {
+        try {
+          console.log('Setting token...');
+          setToken(session.user.accessToken);
+          
+          console.log('Fetching user info...');
+          const userRes = await fetchUserInfoService();
+          console.log('User info response:', userRes);
+          
+          if (userRes.code === 200) {
+            console.log('User info success, setting user:', userRes.user);
+            setUser(userRes.user);
+            
+            console.log('Fetching random review...');
+            const reviewRes = await getRandomReview();
+            console.log('Review response:', reviewRes);
+            
+            if (reviewRes.code === 200) {
+              const { readCount, totalCount, note, allFinished } = reviewRes.data;
+              console.log('Review data:', { readCount, totalCount, note, allFinished });
+              
+              if (totalCount === 0) {
+                console.log('No notes available');
+                setCurrentNote(null);
+              } else if (allFinished) {
+                console.log('All notes reviewed');
+                setIsModalOpen(true);
+              } else {
+                console.log('Setting current note:', note);
+                setCurrentNote(note);
+                setNoteHistory((prev) => [...prev, note]);
+                setHistoryIndex((prev) => prev + 1);
+                setReadCount(readCount);
+                setTotalCount(totalCount);
+              }
+            } else {
+              console.error('Failed to get review:', reviewRes);
+            }
+          } else {
+            console.error('Failed to get user info:', userRes);
+          }
+        } catch (err) {
+          console.error("初始化数据失败:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        console.log('No session or token, using demo data');
+        setIsLoading(false);
+        setTotalCount(demoNotes.length);
+        setReadCount(0);
+        handleDemoRandomNote();
       }
-    });
-  }, []);
+    };
 
-  const handleRandomNote = () => {
-    getRandomReview()
-      .then((res) => {
-        const { code, data, msg } = res;
-        if (code === 200) {
-          const { readCount, totalCount, note, allFinished } = data;
+    initializeData();
+  }, [session]);
+
+  const handleRandomNote = async () => {
+    try {
+      setIsLoading(true);
+      console.log('=== Random Note Debug ===');
+      console.log('Session status:', session?.status);
+      console.log('Access token:', session?.user?.accessToken);
+      
+      if (session?.user?.accessToken) {
+        console.log('Fetching random review...');
+        const res = await getRandomReview();
+        console.log('Random review response:', res);
+        
+        if (res.code === 200) {
+          const { readCount, totalCount, note, allFinished } = res.data;
+          console.log('Review data:', { readCount, totalCount, note, allFinished });
+          
           if (totalCount === 0) {
+            console.log('No notes available');
             setCurrentNote(null);
           } else if (allFinished) {
+            console.log('All notes reviewed');
             setIsModalOpen(true);
           } else {
+            console.log('Setting new note:', note);
             setCurrentNote(note);
-            // 添加到历史记录
             setNoteHistory((prev) => [...prev, note]);
             setHistoryIndex((prev) => prev + 1);
             setReadCount(readCount);
             setTotalCount(totalCount);
           }
+        } else {
+          console.error('Failed to get random review:', res);
         }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      } else {
+        console.log('No session, using demo note');
+        handleDemoRandomNote();
+      }
+    } catch (err) {
+      console.error("获取随机笔记失败:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoRandomNote = () => {
+    console.log('Generating demo note...');
+    const randomIndex = Math.floor(Math.random() * demoNotes.length);
+    const note = demoNotes[randomIndex];
+    console.log('Demo note:', note);
+    setCurrentNote(note);
+    setNoteHistory((prev) => [...prev, note]);
+    setHistoryIndex((prev) => prev + 1);
+    setReadCount((prev) => prev + 1);
   };
 
   const handlePreviousNote = () => {
     if (historyIndex > 0) {
-      const previousNote = noteHistory[historyIndex - 1];
-      setCurrentNote(previousNote);
       setHistoryIndex((prev) => prev - 1);
-      setReadCount((prev) => prev - 1);
+      setCurrentNote(noteHistory[historyIndex - 1]);
+    }
+  };
+
+  const handleNextNote = () => {
+    if (historyIndex < noteHistory.length - 1) {
+      setHistoryIndex((prev) => prev + 1);
+      setCurrentNote(noteHistory[historyIndex + 1]);
     }
   };
 
   const handleCopy = async () => {
     if (!currentNote) return;
-
-    const textToCopy = `${currentNote.markText || ""}\n${currentNote.noteContent || ""}\n${currentNote.chapterName || ""}\n${currentNote.bookName || ""}`;
-
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text:", err);
-    }
+    const text = `${currentNote.markText}\n${currentNote.noteContent}\n${currentNote.chapterName}\n${currentNote.bookName}`;
+    await navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   const handleSwitchBackground = () => {
@@ -155,7 +235,13 @@ const Page = () => {
             ? `linear-gradient(rgba(245, 242, 236, 0.9), rgba(245, 242, 236, 0.9)), url("${backgrounds[currentBackgroundIndex]}")`
             : currentBackgroundIndex === 5
               ? `linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), url("${backgrounds[currentBackgroundIndex]}")`
-              : `url("${backgrounds[currentBackgroundIndex]}")`,
+              : currentBackgroundIndex === 2
+                ? `url("${backgrounds[currentBackgroundIndex]}")`
+                : currentBackgroundIndex === 3
+                  ? `linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), url("${backgrounds[currentBackgroundIndex]}")`
+                  : currentBackgroundIndex === 4
+                    ? `linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), url("${backgrounds[currentBackgroundIndex]}")`
+                    : `url("${backgrounds[currentBackgroundIndex]}")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -169,7 +255,7 @@ const Page = () => {
           <div className="group relative flex flex-1 flex-col items-center justify-center">
             {/* 左上角进度 */}
             <div
-              className={`absolute left-8 top-[60px] text-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
+              className={`absolute left-1 top-[60px] text-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
                 currentBackgroundIndex === 0
                   ? "text-gray-500"
                   : currentBackgroundIndex === 2
@@ -183,14 +269,12 @@ const Page = () => {
                           : "text-white/90"
               }`}
             >
-              {user
-                ? `回顾进度：${readCount}/${totalCount}`
-                : `进度：${readCount}/${totalCount}`}
+              回顾进度：{readCount}/{totalCount}
             </div>
 
             {/* 右上角按钮组 */}
             <div
-              className={`absolute right-8 top-[40px] flex items-center space-x-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
+              className={`absolute right-1 top-[40px] flex items-center space-x-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
                 currentBackgroundIndex === 0
                   ? "text-gray-500"
                   : currentBackgroundIndex === 2
@@ -244,9 +328,8 @@ const Page = () => {
                         <div className="text-lg leading-relaxed text-gray-800">
                           {currentNote.noteContent}
                         </div>
-                        <div className="space-y-1 text-sm text-gray-500">
-                          <div>{currentNote.chapterName}</div>
-                          <div>{currentNote.bookName}</div>
+                        <div className="text-sm text-gray-500">
+                          {currentNote.chapterName}
                         </div>
                       </div>
                     ) : (
@@ -260,11 +343,7 @@ const Page = () => {
                   <div className="mt-6 flex items-center justify-between border-t border-[#F0F0F0]/60 pt-4 text-sm">
                     <div className="flex flex-col space-y-2">
                       <a
-                        href={
-                          user
-                            ? `https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}`
-                            : "https://readecho.cn"
-                        }
+                        href="https://readecho.cn"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-['Noto Serif SC',serif] cursor-pointer tracking-wide text-[#262626] transition-colors hover:text-[#FF725F]"
@@ -352,11 +431,7 @@ const Page = () => {
 
                   <div className="flex flex-col items-center space-y-2">
                     <a
-                      href={
-                        user
-                          ? `https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}`
-                          : "https://readecho.cn"
-                      }
+                      href="https://readecho.cn"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`text-base ${
@@ -433,22 +508,33 @@ const Page = () => {
                   上一个
                 </button>
               )}
-              <div className="mt-8 flex flex-col items-center space-y-4">
+              <div className="mt-1 flex flex-col items-center space-y-4">
                 <button
                   onClick={handleRandomNote}
-                  className="flex items-center space-x-2 rounded-full bg-[#FF725F] px-6 py-2 text-white transition-colors hover:bg-[#FF8F7F]"
+                  className={`px-6 py-3 ${
+                    currentBackgroundIndex === 5
+                      ? 'bg-white bg-opacity-20 backdrop-blur-md text-[#4CAF50]'
+                      : currentBackgroundIndex === 0
+                      ? 'bg-[#FF725F] hover:bg-[#FF8F7F] text-white'
+                      : 'bg-white bg-opacity-20 backdrop-blur-md text-white hover:bg-opacity-30'
+                  } rounded-full transition-all duration-300 flex items-center gap-2`}
                 >
-                  <Shuffle className="h-4 w-4" />
-                  <span>随机回顾</span>
+                  <Shuffle className="w-4 h-4" />
+                  随机回顾
                 </button>
-                {!user && (
-                  <a
-                    href="http://readecho.cn/signin"
-                    className="cursor-pointer text-sm text-[#FF725F] transition-colors hover:text-[#FF8F7F]"
-                  >
+                
+                <div className="text-[#FF725F] text-sm space-x-4">
+                  <Link href="/api/auth/signin" className="hover:text-[#FF8F7F] transition-colors">
                     登录 Readecho
-                  </a>
-                )}
+                  </Link>
+                  <Link
+                    href="https://chromewebstore.google.com/detail/readecho-%E5%90%8C%E6%AD%A5%E4%BD%A0%E7%9A%84%E5%BE%AE%E4%BF%A1%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/ibinnfpnfbcfdblmjpmjjmffcjlcadig"
+                    target="_blank"
+                    className="hover:text-[#FF8F7F] transition-colors"
+                  >
+                    下载浏览器插件
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

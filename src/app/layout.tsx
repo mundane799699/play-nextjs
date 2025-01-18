@@ -37,19 +37,21 @@ export default function RootLayout({
         {loading ? (
           <PreLoader />
         ) : (
-          <AuthProvider>
-            <ThemeProvider
-              attribute="class"
-              enableSystem={false}
-              defaultTheme="light"
-            >
-              <ToasterContext />
-              {pathname !== '/review' && <Header />}
-              {children}
-              {/* <Footer /> */}
-              <ScrollToTop />
-            </ThemeProvider>
-          </AuthProvider>
+          <SessionProvider>
+            <AuthProvider>
+              <ThemeProvider
+                attribute="class"
+                enableSystem={false}
+                defaultTheme="light"
+              >
+                <ToasterContext />
+                {pathname !== '/review' && <Header />}
+                {children}
+                {/* <Footer /> */}
+                <ScrollToTop />
+              </ThemeProvider>
+            </AuthProvider>
+          </SessionProvider>
         )}
       </body>
     </html>
