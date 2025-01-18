@@ -49,6 +49,7 @@ model User {
   passwordResetTokenExp DateTime?
   accounts              Account[]
   sessions              Session[]
+  paymentRecords        PaymentRecord[]
 }
 
 model VerificationToken {
@@ -57,4 +58,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PaymentRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  planType  String   // 'month' or 'year'
+  wechatId  String
+  timestamp DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }

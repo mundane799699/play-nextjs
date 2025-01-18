@@ -51,6 +51,13 @@ const Header = () => {
     return pathUrl.startsWith(menu.path);
   };
 
+  const navigation = [
+    { name: '首页', href: '/' },
+    { name: 'AI对话', href: '/Ai-echo' },
+    { name: '回顾', href: '/review', highlight: true },
+    { name: '会员', href: '/vip' },
+  ];
+
   return (
     <>
       <header
@@ -163,6 +170,7 @@ const Header = () => {
                               onClick={navbarToggleHandler}
                               scroll={false}
                               href={menuItem.path}
+                              target={menuItem.newTab ? "_blank" : "_self"}
                               className={`ud-menu-scroll flex py-2 text-base text-dark group-hover:text-primary dark:text-white dark:group-hover:text-primary lg:inline-flex lg:px-0 lg:py-6 ${
                                 meetPath(menuItem) && "text-primary"
                               }`}
@@ -173,6 +181,7 @@ const Header = () => {
                             <Link
                               scroll={false}
                               href={menuItem.path}
+                              target={menuItem.newTab ? "_blank" : "_self"}
                               className={`ud-menu-scroll flex py-2 text-base lg:inline-flex lg:px-0 lg:py-6 ${
                                 sticky
                                   ? "text-dark group-hover:text-primary dark:text-white dark:group-hover:text-primary"
