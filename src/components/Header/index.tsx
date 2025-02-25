@@ -3,15 +3,17 @@ import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import Modal from "@/components/Modal";
 
 import menuData from "./menuData";
 import { Menu } from "@/types/menu";
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const pathUrl = usePathname();
   // Navbar toggle
@@ -51,12 +53,14 @@ const Header = () => {
     return pathUrl.startsWith(menu.path);
   };
 
-  const navigation = [
-    { name: '首页', href: '/' },
-    { name: 'AI对话', href: '/Ai-echo' },
-    { name: '回顾', href: '/review', highlight: true },
-    { name: '会员', href: '/vip' },
-  ];
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleMenuClick = (e: React.MouseEvent, menuItem: Menu) => {
+    if (menuItem.needLogin && !user) {
+      e.preventDefault();
+      setShowLoginModal(true);
+    }
+  };
 
   return (
     <>
@@ -167,7 +171,10 @@ const Header = () => {
                         <li key={index} className="group relative">
                           {pathUrl !== "/" ? (
                             <Link
-                              onClick={navbarToggleHandler}
+                              onClick={(e) => {
+                                navbarToggleHandler();
+                                handleMenuClick(e, menuItem);
+                              }}
                               scroll={false}
                               href={menuItem.path}
                               target={menuItem.newTab ? "_blank" : "_self"}
@@ -179,6 +186,7 @@ const Header = () => {
                             </Link>
                           ) : (
                             <Link
+                              onClick={(e) => handleMenuClick(e, menuItem)}
                               scroll={false}
                               href={menuItem.path}
                               target={menuItem.newTab ? "_blank" : "_self"}
@@ -280,7 +288,7 @@ const Header = () => {
                 <button
                   aria-label="theme toggler"
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="hidden flex h-8 w-8 items-center justify-center text-body-color duration-300 dark:text-white"
+                  className="flex h-8 w-8 items-center justify-center text-body-color duration-300 dark:text-white"
                 >
                   <span>
                     <svg
@@ -305,13 +313,14 @@ const Header = () => {
 
                 {user?.userName ? (
                   <>
-                    <p
-                      className={`loginBtn px-7 py-3 text-base font-medium ${
+                    <Link
+                      href="/profile"
+                      className={`loginBtn px-7 py-3 text-base font-medium transition-opacity hover:opacity-80 ${
                         !sticky && pathUrl === "/" ? "text-white" : "text-dark"
                       }`}
                     >
                       {user?.nickName}
-                    </p>
+                    </Link>
                     {pathUrl !== "/" || sticky ? (
                       <button
                         onClick={() => logout()}
@@ -374,6 +383,18 @@ const Header = () => {
           </div>
         </div>
       </header>
+
+      <Modal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        title="需要登录"
+        message="请先登录后再访问此页面"
+        confirmText="去登录"
+        onConfirm={() => {
+          setShowLoginModal(false);
+          router.push("/signin");
+        }}
+      />
     </>
   );
 };

@@ -40,7 +40,7 @@ const TabComponent = () => {
               : "text-gray-500 hover:text-gray-700"
           }`}
         >
-          回顾 beta
+          回顾
         </Link>
       </div>
     </div>

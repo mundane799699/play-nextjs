@@ -17,7 +17,7 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Readecho - 同步你的微信读书笔记，让回顾释放知识的力量",
   description:
-    "Free Next.js SaaS Boilerplate and Starter Kit designed and built for SaaS startups. It comes with all necessary integrations, pages, and components you need to launch a feature-rich SaaS websites.",
+    "Readecho 是一个专注于微信读书笔记同步和知识管理的工具。自动同步你的微信读书笔记，通过AI智能分析和定期回顾，帮助你更好地吸收和运用知识。",
 };
 
 export default function Home() {
