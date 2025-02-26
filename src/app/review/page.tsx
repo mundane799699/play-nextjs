@@ -18,9 +18,6 @@ import {
 import dayjs from "dayjs";
 import Modal from "@/components/DashBoard/Modal";
 import SettingsDialog from "@/components/DashBoard/SettingsDialog";
-import { demoNotes } from "@/data/demoNotes";
-import { useSession } from "next-auth/react";
-import { setToken } from "@/utils/user-token";
 
 const backgrounds = [
   "/images/backgrounds/bg1.png",
@@ -34,7 +31,6 @@ const backgrounds = [
 console.log("Available backgrounds:", backgrounds);
 
 const Page = () => {
-  const { data: session } = useSession();
   const [user, setUser] = useState(null);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [noteHistory, setNoteHistory] = useState<Note[]>([]);
@@ -71,122 +67,29 @@ const Page = () => {
 
   // 处理登录状态和数据获取
   useEffect(() => {
-    const initializeData = async () => {
-      console.log('=== Debug Logs ===');
-      console.log('Session:', session);
-      console.log('Access Token:', session?.user?.accessToken);
-      
-      if (session?.user?.accessToken) {
-        try {
-          console.log('Setting token...');
-          setToken(session.user.accessToken);
-          
-          console.log('Fetching user info...');
-          const userRes = await fetchUserInfoService();
-          console.log('User info response:', userRes);
-          
-          if (userRes.code === 200) {
-            console.log('User info success, setting user:', userRes.user);
-            setUser(userRes.user);
-            
-            console.log('Fetching random review...');
-            const reviewRes = await getRandomReview();
-            console.log('Review response:', reviewRes);
-            
-            if (reviewRes.code === 200) {
-              const { readCount, totalCount, note, allFinished } = reviewRes.data;
-              console.log('Review data:', { readCount, totalCount, note, allFinished });
-              
-              if (totalCount === 0) {
-                console.log('No notes available');
-                setCurrentNote(null);
-              } else if (allFinished) {
-                console.log('All notes reviewed');
-                setIsModalOpen(true);
-              } else {
-                console.log('Setting current note:', note);
-                setCurrentNote(note);
-                setNoteHistory((prev) => [...prev, note]);
-                setHistoryIndex((prev) => prev + 1);
-                setReadCount(readCount);
-                setTotalCount(totalCount);
-              }
-            } else {
-              console.error('Failed to get review:', reviewRes);
-            }
-          } else {
-            console.error('Failed to get user info:', userRes);
-          }
-        } catch (err) {
-          console.error("初始化数据失败:", err);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        console.log('No session or token, using demo data');
-        setIsLoading(false);
-        setTotalCount(demoNotes.length);
-        setReadCount(0);
-        handleDemoRandomNote();
-      }
-    };
-
-    initializeData();
-  }, [session]);
+    handleRandomNote();
+  }, []);
 
   const handleRandomNote = async () => {
-    try {
-      setIsLoading(true);
-      console.log('=== Random Note Debug ===');
-      console.log('Session status:', session?.status);
-      console.log('Access token:', session?.user?.accessToken);
-      
-      if (session?.user?.accessToken) {
-        console.log('Fetching random review...');
-        const res = await getRandomReview();
-        console.log('Random review response:', res);
-        
-        if (res.code === 200) {
-          const { readCount, totalCount, note, allFinished } = res.data;
-          console.log('Review data:', { readCount, totalCount, note, allFinished });
-          
+    getRandomReview()
+      .then((res) => {
+        const { code, data, msg } = res;
+        if (code === 200) {
+          const { readCount, totalCount, note, allFinished } = data;
           if (totalCount === 0) {
-            console.log('No notes available');
             setCurrentNote(null);
           } else if (allFinished) {
-            console.log('All notes reviewed');
             setIsModalOpen(true);
           } else {
-            console.log('Setting new note:', note);
             setCurrentNote(note);
-            setNoteHistory((prev) => [...prev, note]);
-            setHistoryIndex((prev) => prev + 1);
             setReadCount(readCount);
             setTotalCount(totalCount);
           }
-        } else {
-          console.error('Failed to get random review:', res);
         }
-      } else {
-        console.log('No session, using demo note');
-        handleDemoRandomNote();
-      }
-    } catch (err) {
-      console.error("获取随机笔记失败:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemoRandomNote = () => {
-    console.log('Generating demo note...');
-    const randomIndex = Math.floor(Math.random() * demoNotes.length);
-    const note = demoNotes[randomIndex];
-    console.log('Demo note:', note);
-    setCurrentNote(note);
-    setNoteHistory((prev) => [...prev, note]);
-    setHistoryIndex((prev) => prev + 1);
-    setReadCount((prev) => prev + 1);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const handlePreviousNote = () => {
@@ -205,8 +108,8 @@ const Page = () => {
 
   const handleCopy = async () => {
     if (!currentNote) return;
-    const text = `${currentNote.markText}\n${currentNote.noteContent}\n${currentNote.chapterName}\n${currentNote.bookName}`;
-    await navigator.clipboard.writeText(text);
+    const textToCopy = `${currentNote.markText || ""}\n${currentNote.noteContent || ""}\n${currentNote.chapterName || ""}\n${currentNote.bookName || ""}`;
+    await navigator.clipboard.writeText(textToCopy);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
@@ -513,28 +416,15 @@ const Page = () => {
                   onClick={handleRandomNote}
                   className={`px-6 py-3 ${
                     currentBackgroundIndex === 5
-                      ? 'bg-white bg-opacity-20 backdrop-blur-md text-[#4CAF50]'
+                      ? "bg-white bg-opacity-20 text-[#4CAF50] backdrop-blur-md"
                       : currentBackgroundIndex === 0
-                      ? 'bg-[#FF725F] hover:bg-[#FF8F7F] text-white'
-                      : 'bg-white bg-opacity-20 backdrop-blur-md text-white hover:bg-opacity-30'
-                  } rounded-full transition-all duration-300 flex items-center gap-2`}
+                        ? "bg-[#FF725F] text-white hover:bg-[#FF8F7F]"
+                        : "bg-white bg-opacity-20 text-white backdrop-blur-md hover:bg-opacity-30"
+                  } flex items-center gap-2 rounded-full transition-all duration-300`}
                 >
-                  <Shuffle className="w-4 h-4" />
+                  <Shuffle className="h-4 w-4" />
                   随机回顾
                 </button>
-                
-                <div className="text-[#FF725F] text-sm space-x-4">
-                  <Link href="/api/auth/signin" className="hover:text-[#FF8F7F] transition-colors">
-                    登录 Readecho
-                  </Link>
-                  <Link
-                    href="https://chromewebstore.google.com/detail/readecho-%E5%90%8C%E6%AD%A5%E4%BD%A0%E7%9A%84%E5%BE%AE%E4%BF%A1%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/ibinnfpnfbcfdblmjpmjjmffcjlcadig"
-                    target="_blank"
-                    className="hover:text-[#FF8F7F] transition-colors"
-                  >
-                    下载浏览器插件
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
