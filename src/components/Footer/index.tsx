@@ -6,6 +6,12 @@ const Footer = () => {
     <footer className="wow fadeInUp relative z-10 bg-primary pt-20 text-white dark:bg-dark-2 lg:pt-[100px]">
       {/* 链接信息 */}
       <div className="container flex justify-center gap-4">
+        <Link href="https://xhs.mundane.ink" className="hover:underline">
+          redArchive小红书收藏导出
+        </Link>
+        <Link href="https://danci.mundane.ink" className="hover:underline">
+          邮件单词
+        </Link>
         <Link href="https://gsc.readecho.cn/" className="hover:underline">
           今日古诗词
         </Link>
