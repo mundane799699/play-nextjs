@@ -22,7 +22,7 @@ export default function PaymentModal({
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const price = planType === "MONTHLY" ? 9.9 : 68;
+  const price = planType === "MONTHLY" ? 49 : 99;
 
   if (!isOpen) return null;
 
@@ -110,7 +110,7 @@ export default function PaymentModal({
           <div className="sm:flex sm:items-start">
             <div className="mt-3 w-full text-center sm:mt-0 sm:text-left">
               <h3 className="text-center text-xl font-medium text-gray-900">
-                Readecho {planType === "MONTHLY" ? "月会员" : "年会员"}
+                Readecho {planType === "MONTHLY" ? "Plus会员" : "Pro会员"}
               </h3>
 
               <div className="mt-6 flex flex-col items-center">
@@ -118,8 +118,8 @@ export default function PaymentModal({
                   <Image
                     src={
                       planType === "MONTHLY"
-                        ? "/images/vip/monthprice.png"
-                        : "/images/vip/yearprice.png"
+                        ? "/images/vip/plusprice.png"
+                        : "/images/vip/proprice.png"
                     }
                     alt="支付二维码"
                     fill
@@ -165,7 +165,7 @@ export default function PaymentModal({
             <button
               type="button"
               className="inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm sm:col-start-2 sm:text-sm"
-              style={{ backgroundColor: "rgb(238, 122, 102)" }}
+              style={{ backgroundColor: "rgb(232, 117, 73)" }}
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
