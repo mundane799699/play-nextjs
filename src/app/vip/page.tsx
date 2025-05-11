@@ -8,12 +8,10 @@ import { useTheme } from "next-themes";
 
 export default function VIPPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"MONTHLY" | "YEARLY">(
-    "MONTHLY",
-  );
+  const [selectedPlan, setSelectedPlan] = useState<"PLUS" | "PRO">("PLUS");
   const { theme } = useTheme();
 
-  const handleOpenModal = (planType: "MONTHLY" | "YEARLY") => {
+  const handleOpenModal = (planType: "PLUS" | "PRO") => {
     setSelectedPlan(planType);
     setIsModalOpen(true);
   };
@@ -39,14 +37,18 @@ export default function VIPPage() {
             <div className="mb-8">
               <h3 className="text-2xl font-bold">Free</h3>
               <div className="mt-4 flex items-end">
-                <span className="text-3xl font-bold align-top">¥</span>
+                <span className="align-top text-3xl font-bold">¥</span>
                 <span className="text-5xl font-bold">0</span>
               </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">免费使用</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                免费使用
+              </p>
             </div>
 
             <div className="mb-8">
-              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">基础笔记同步功能</p>
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+                基础笔记同步功能
+              </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
@@ -58,14 +60,6 @@ export default function VIPPage() {
                 </li>
               </ul>
             </div>
-
-            <div className="mt-auto">
-              <button
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-              >
-                您当前的套餐
-              </button>
-            </div>
           </div>
 
           {/* Plus 套餐 */}
@@ -73,14 +67,18 @@ export default function VIPPage() {
             <div className="mb-8">
               <h3 className="text-2xl font-bold">Plus</h3>
               <div className="mt-4 flex items-end">
-                <span className="text-3xl font-bold align-top">¥</span>
+                <span className="align-top text-3xl font-bold">¥</span>
                 <span className="text-5xl font-bold">49</span>
               </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">永久同步</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                永久同步
+              </p>
             </div>
 
             <div className="mb-8">
-              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">无限量笔记同步</p>
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+                无限量笔记同步
+              </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
@@ -88,7 +86,9 @@ export default function VIPPage() {
                 </li>
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
-                  <span className="text-sm">多种导出格式支持(Markdown, excel)</span>
+                  <span className="text-sm">
+                    多种导出格式支持(Markdown, excel)
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
@@ -99,7 +99,7 @@ export default function VIPPage() {
 
             <div className="mt-auto">
               <button
-                onClick={() => handleOpenModal("MONTHLY")}
+                onClick={() => handleOpenModal("PLUS")}
                 className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
               >
                 获取 Plus
@@ -115,14 +115,18 @@ export default function VIPPage() {
             <div className="mb-8">
               <h3 className="text-2xl font-bold">Pro</h3>
               <div className="mt-4 flex items-end">
-                <span className="text-3xl font-bold align-top">¥</span>
+                <span className="align-top text-3xl font-bold">¥</span>
                 <span className="text-5xl font-bold">99</span>
               </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">永久同步+一年增值服务</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                永久同步+一年增值服务
+              </p>
             </div>
 
             <div className="mb-8">
-              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">尽先体验所有高级功能</p>
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+                尽先体验所有高级功能
+              </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
@@ -130,7 +134,9 @@ export default function VIPPage() {
                 </li>
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
-                  <span className="text-sm">自定义笔记邮件回顾（一年使用）</span>
+                  <span className="text-sm">
+                    自定义笔记邮件回顾（一年使用）
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <BsCheckCircle className="mr-2 mt-1 text-primary" />
@@ -141,7 +147,7 @@ export default function VIPPage() {
 
             <div className="mt-auto">
               <button
-                onClick={() => handleOpenModal("YEARLY")}
+                onClick={() => handleOpenModal("PRO")}
                 className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:opacity-90"
               >
                 获取 Pro
@@ -149,11 +155,13 @@ export default function VIPPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-12 text-center">
           <Link
-            href="mailto:contact@example.com"
+            href="https://v3oxu28gnc.feishu.cn/docx/EQvqdMm3WoqlBjxT7ASc3u0wnKf"
             className="text-primary transition-opacity duration-300 hover:opacity-80"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             联系我们，添加你想要的功能
           </Link>

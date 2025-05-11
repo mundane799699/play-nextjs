@@ -9,7 +9,7 @@ import { createOrder } from "@/services/order";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  planType: "MONTHLY" | "YEARLY";
+  planType: "PLUS" | "PRO";
 }
 
 export default function PaymentModal({
@@ -22,7 +22,7 @@ export default function PaymentModal({
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const price = planType === "MONTHLY" ? 49 : 99;
+  const price = planType === "PLUS" ? 49 : 99;
 
   if (!isOpen) return null;
 
@@ -57,6 +57,8 @@ export default function PaymentModal({
       const { code, msg } = res;
       if (code === 200) {
         toast.success("提交成功，请等待小助理核对");
+        setWechatId("");
+        setEmail("");
         onClose();
       } else {
         toast.error(msg, {
@@ -70,7 +72,7 @@ export default function PaymentModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto"
+      className="fixed inset-0 z-[9999] overflow-y-auto"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
@@ -110,14 +112,14 @@ export default function PaymentModal({
           <div className="sm:flex sm:items-start">
             <div className="mt-3 w-full text-center sm:mt-0 sm:text-left">
               <h3 className="text-center text-xl font-medium text-gray-900">
-                Readecho {planType === "MONTHLY" ? "Plus会员" : "Pro会员"}
+                Readecho {planType === "PLUS" ? "Plus会员" : "Pro会员"}
               </h3>
 
               <div className="mt-6 flex flex-col items-center">
                 <div className="relative h-48 w-48">
                   <Image
                     src={
-                      planType === "MONTHLY"
+                      planType === "PLUS"
                         ? "/images/vip/plusprice.png"
                         : "/images/vip/proprice.png"
                     }
@@ -152,6 +154,7 @@ export default function PaymentModal({
                   </label>
                   <input
                     type="text"
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="focus:ring-primary-500 focus:border-primary-500 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:outline-none focus:ring-2"
                     placeholder="请输入您的账号邮箱"
@@ -174,7 +177,11 @@ export default function PaymentModal({
             <button
               type="button"
               className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 sm:col-start-1 sm:mt-0 sm:text-sm"
-              onClick={onClose}
+              onClick={() => {
+                setWechatId("");
+                setEmail("");
+                onClose();
+              }}
             >
               取消
             </button>

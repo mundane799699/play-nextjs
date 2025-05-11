@@ -7,8 +7,8 @@ import Breadcrumb from "@/components/Common/Breadcrumb";
 import { fetchMemberInfo } from "@/services/user";
 const memberTypeMap: Record<string, string> = {
   FREE: "免费用户",
-  MONTHLY: "月度会员",
-  YEARLY: "年度会员",
+  PLUS: "Plus会员",
+  PRO: "Pro会员",
 };
 
 const ProfilePage = () => {
@@ -82,7 +82,7 @@ const ProfilePage = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">
-                      会员到期时间
+                      增值服务到期时间
                     </span>
                     <span className="text-dark dark:text-white">
                       {memberInfo.memberExpireTime}
