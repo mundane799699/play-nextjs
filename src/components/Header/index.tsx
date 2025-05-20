@@ -291,7 +291,7 @@ const Header = () => {
                       }`}
                     >
                       <span className="relative inline-flex items-center">
-                        {user?.nickName}
+                      {user?.nickName}
                         {user?.memberType && (
                           <span className="ml-1 inline-flex h-[18px] items-center justify-center rounded-[3px] bg-[#e87549] px-0.5 text-[8px] font-medium leading-none text-white">
                             {user.memberType}

@@ -34,7 +34,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
   const [exportFormat, setExportFormat] = useState<"excel" | "markdown">("excel");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  
+
   const [isRandomReviewOpen, setIsRandomReviewOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 
@@ -134,7 +134,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
             {bookName ? `${bookName}：` : '共'}
             <span className="font-medium">{filteredNotes.length}/{totalNotes}条</span>
           </span>
-          
+
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700"
@@ -205,17 +205,17 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
 
         <div className="flex items-center space-x-2">
-          <button
+            <button
             onClick={() => setIsSettingsDialogOpen(true)}
             className="group relative flex items-center px-4 py-2 text-gray-600 transition duration-300 hover:text-gray-800"
-          >
+            >
             <Mail className="mr-1 h-4 w-4" />
             <span className="relative">
               邮箱回顾
               <span className="ml-0.5 inline-block translate-y-[-3px] rounded-sm bg-primary/80 px-0.5 text-[6px] font-normal uppercase leading-3 text-white opacity-80">pro</span>
             </span>
-          </button>
-          <button
+            </button>
+            <button
             onClick={() => setIsRandomReviewOpen(true)}
             className="flex items-center px-4 py-2 text-gray-600 transition duration-300 hover:text-gray-800"
           >
@@ -235,9 +235,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
               <button
                 onClick={() => setSearchTerm("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500"
-              >
+            >
                 <X className="h-4 w-4" />
-              </button>
+            </button>
             )}
           </div>
         </div>
@@ -247,43 +247,43 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
       <ul className="mt-4 space-y-6">
         {filteredNotes.length > 0 ? (
           filteredNotes.map((note: any) => (
-            <div
-              key={note.reviewId}
-              className="rounded-lg bg-white/80 p-6 md:p-8 shadow-sm backdrop-blur-sm"
-            >
-              <div className="flex flex-col">
-                {/* 标记的文本 */}
-                <div className="relative pl-4 mb-6">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
-                  <blockquote className="text-lg font-medium text-gray-700">
-                    {note.markText}
-                  </blockquote>
-                </div>
+          <div
+            key={note.reviewId}
+            className="rounded-lg bg-white/80 p-6 md:p-8 shadow-sm backdrop-blur-sm"
+          >
+            <div className="flex flex-col">
+              {/* 标记的文本 */}
+              <div className="relative pl-4 mb-6">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
+                <blockquote className="text-lg font-medium text-gray-700">
+                  {note.markText}
+                </blockquote>
+              </div>
 
-                {/* 笔记内容 */}
-                <div>
-                  <div className="text-base leading-relaxed text-gray-800">
-                    {note.noteContent}
-                  </div>
+              {/* 笔记内容 */}
+              <div>
+                <div className="text-base leading-relaxed text-gray-800">
+                  {note.noteContent}
                 </div>
+              </div>
 
-                {/* 书籍信息 */}
-                <div className="flex items-center justify-between mt-6 pt-4 text-sm border-t border-gray-100">
+              {/* 书籍信息 */}
+              <div className="flex items-center justify-between mt-6 pt-4 text-sm border-t border-gray-100">
                   <Link
                     href={`/reader/${note.bookId}`}
                     className="font-medium text-gray-900 hover:text-primary transition-colors"
                   >
-                    {note.chapterName
-                      ? `${note.bookName} / ${note.chapterName}`
-                      : note.bookName}
+                  {note.chapterName
+                    ? `${note.bookName} / ${note.chapterName}`
+                    : note.bookName}
                   </Link>
-                  <span className="text-gray-500">
-                    {note.noteTime &&
-                      dayjs.unix(note.noteTime).format("YYYY-MM-DD")}
-                  </span>
-                </div>
+                <span className="text-gray-500">
+                  {note.noteTime &&
+                    dayjs.unix(note.noteTime).format("YYYY-MM-DD")}
+                </span>
               </div>
             </div>
+          </div>
           ))
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
