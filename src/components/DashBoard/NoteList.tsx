@@ -3,13 +3,15 @@ import dayjs from "dayjs";
 
 import { useDebounce } from "use-debounce";
 
-import { ChevronDown, X, ArrowRightLeft } from "lucide-react";
+import { ChevronDown, X, ArrowRightLeft, Shuffle, Mail } from "lucide-react";
 
 import { exportNotesService, exportNotesMdService } from "@/services/notes";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 import Link from "next/link";
+import RandomReviewModal from "../Modal/RandomReviewModal";
+import SettingsDialog from "./SettingsDialog";
 
 
 
@@ -28,6 +30,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     "excel",
 
   );
+  
+  const [isRandomReviewOpen, setIsRandomReviewOpen] = useState(false);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 
 
 
@@ -93,6 +98,23 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
 
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setIsSettingsDialogOpen(true)}
+            className="group relative flex items-center px-4 py-2 text-gray-600 transition duration-300 hover:text-gray-800"
+          >
+            <Mail className="mr-1 h-4 w-4" />
+            <span className="relative">
+              邮箱回顾
+              <span className="ml-0.5 inline-block translate-y-[-3px] rounded-sm bg-primary/80 px-0.5 text-[6px] font-normal uppercase leading-3 text-white opacity-80">pro</span>
+            </span>
+          </button>
+          <button
+            onClick={() => setIsRandomReviewOpen(true)}
+            className="flex items-center px-4 py-2 text-gray-600 transition duration-300 hover:text-gray-800"
+          >
+            <Shuffle className="mr-1 h-4 w-4" />
+            随机回顾
+          </button>
           <div className="flex items-center">
             <button
               onClick={handleExport}
@@ -154,6 +176,17 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
       </ul>
 
+      {/* 随机回顾弹窗 */}
+      <RandomReviewModal
+        isOpen={isRandomReviewOpen}
+        onClose={() => setIsRandomReviewOpen(false)}
+      />
+
+      {/* 邮箱回顾设置弹窗 */}
+      <SettingsDialog
+        isOpen={isSettingsDialogOpen}
+        onClose={() => setIsSettingsDialogOpen(false)}
+      />
     </div>
 
   );

@@ -7,6 +7,7 @@ import { getSubscriptionByUserId, testSendEmail } from "@/services/email";
 import { EmailSubscription } from "@/types/emailSubscription";
 import { saveSubscription } from "@/services/email";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 // Settings Dialog Component
 const SettingsDialog = ({
@@ -104,7 +105,17 @@ const SettingsDialog = ({
         <div className="relative w-[90%] max-w-md rounded-lg bg-white shadow-lg">
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
-            <h2 className="text-lg font-medium">邮箱回顾</h2>
+            <div>
+              <h2 className="text-lg font-medium">邮箱回顾</h2>
+              <a 
+                href="http://readecho.cn/vip" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-sm text-gray-500 hover:text-primary hover:underline"
+              >
+                开通Pro版，每日收到一封读过的书籍笔记
+              </a>
+            </div>
             <button
               onClick={onClose}
               className="rounded-full p-1 hover:bg-gray-100"
