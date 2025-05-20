@@ -43,6 +43,8 @@ export default function RootLayout({
                 attribute="class"
                 enableSystem={false}
                 defaultTheme="light"
+                enableColorScheme={false}
+                forcedTheme="light"
               >
                 <ToasterContext />
                 {pathname !== '/review' && <Header />}
