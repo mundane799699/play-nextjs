@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import MembershipDialog from "./MembershipDialog";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getSubscriptionByUserId, testSendEmail } from "@/services/email";
 import { EmailSubscription } from "@/types/emailSubscription";
@@ -17,24 +16,40 @@ const SettingsDialog = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
+  const { user } = useAuth();
   const [selectedBook, setSelectedBook] = useState("全部笔记");
   const [reviewCount, setReviewCount] = useState("5");
   const [email, setEmail] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [showMembership, setShowMembership] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // memberType 可能是字符串 "Pro"，也可能是大小写不同或其他格式 
+  const isPro = user?.memberType?.toUpperCase() === "PRO";
+  const toggleDisabled = !isPro || isLoading;
 
   useEffect(() => {
-    getSubscriptionByUserId().then((res: any) => {
-      const { code, data } = res;
-      if (code === 200) {
-        const { email, sendTime, subscriptionStatus } = data;
-        setEmail(email);
-        setSelectedTime(sendTime);
-        setSubscriptionStatus(subscriptionStatus);
-      }
-    });
-  }, []);
+    if (isOpen) {
+      setIsLoading(true);
+      console.log("Current user:", user);
+      console.log("Is Pro:", isPro);
+      console.log("Member type:", user?.memberType);
+      
+      getSubscriptionByUserId().then((res: any) => {
+        const { code, data } = res;
+        if (code === 200) {
+          const { email, sendTime, subscriptionStatus } = data;
+          setEmail(email);
+          setSelectedTime(sendTime);
+          // 只有Pro用户才能开启订阅
+          setSubscriptionStatus(isPro ? subscriptionStatus : 0);
+        }
+      }).finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [isOpen, isPro, user]);
 
   if (!isOpen) return null;
 
@@ -107,14 +122,6 @@ const SettingsDialog = ({
           <div className="flex items-center justify-between border-b p-4">
             <div>
               <h2 className="text-lg font-medium">邮箱回顾</h2>
-              <a 
-                href="http://readecho.cn/vip" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="mt-1 inline-block text-sm text-gray-500 hover:text-primary hover:underline"
-              >
-                开通Pro版，每日收到一封读过的书籍笔记
-              </a>
             </div>
             <button
               onClick={onClose}
@@ -127,28 +134,56 @@ const SettingsDialog = ({
           {/* Content */}
           <div className="space-y-6 p-6">
             {/* Subscription Status */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">订阅状态</span>
-              <button
-                onClick={() => {
-                  setSubscriptionStatus(subscriptionStatus === 1 ? 0 : 1);
-                }}
-                className={`
-                  relative inline-flex h-6 w-11 items-center rounded-full
-                  ${subscriptionStatus === 1 ? "bg-primary" : "bg-gray-200"}
-                  transition-colors duration-200 ease-in-out focus:outline-none
-                `}
-              >
-                <span
-                  className={`
-                    ${subscriptionStatus === 1 ? "translate-x-6" : "translate-x-1"}
-                    inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out
-                  `}
-                />
-                <span className="sr-only">
-                  {subscriptionStatus === 1 ? "取消订阅" : "开启订阅"}
-                </span>
-              </button>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">开关状态</span>
+                {isLoading ? (
+                  <div className="text-sm text-gray-500">正在加载...</div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (!toggleDisabled) {
+                        setSubscriptionStatus(subscriptionStatus === 1 ? 0 : 1);
+                        console.log("切换订阅状态为:", subscriptionStatus === 1 ? 0 : 1);
+                      }
+                    }}
+                    disabled={toggleDisabled}
+                    className={`
+                      relative inline-flex h-6 w-11 items-center rounded-full
+                      ${subscriptionStatus === 1 ? "bg-primary" : "bg-gray-200"}
+                      ${toggleDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                      transition-colors duration-200 ease-in-out focus:outline-none
+                    `}
+                    title={isPro ? "点击切换订阅状态" : "需要Pro会员才能开启"}
+                  >
+                    <span
+                      className={`
+                        ${subscriptionStatus === 1 ? "translate-x-6" : "translate-x-1"}
+                        inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out
+                      `}
+                    />
+                    <span className="sr-only">
+                      {subscriptionStatus === 1 ? "取消订阅" : "开启订阅"}
+                    </span>
+                  </button>
+                )}
+              </div>
+              
+              {toggleDisabled && !isLoading && !isPro && (
+                <a 
+                  href="https://readecho.cn/vip" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block text-xs text-[#e87549] hover:underline"
+                >
+                  开通Pro版，每日收到一封读过的书籍笔记
+                </a>
+              )}
+              {isPro && !isLoading && (
+                <p className="text-xs text-gray-500">
+                  Pro用户专享功能，可自由开启或关闭邮箱回顾
+                </p>
+              )}
             </div>
 
             {/* Review Range */}
@@ -204,15 +239,6 @@ const SettingsDialog = ({
               />
             </div>
 
-            <div className="flex items-center justify-end">
-              <button
-                onClick={testSend}
-                className="rounded-md bg-primary px-4 py-2 font-medium text-white transition hover:bg-primary/90"
-              >
-                试发一封
-              </button>
-            </div>
-
             {/* Pro Button */}
             {/* <button
               onClick={() => setShowMembership(true)}
@@ -228,19 +254,28 @@ const SettingsDialog = ({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end space-x-3 border-t p-4">
+          <div className="flex justify-between border-t p-4">
             <button
-              onClick={onClose}
-              className="rounded-md px-4 py-2 text-gray-600 transition hover:bg-gray-100"
+              onClick={testSend}
+              className="rounded-md bg-gray-100 px-4 py-2 text-gray-700 transition hover:bg-gray-200"
             >
-              取消
+              试发一封
             </button>
-            <button
-              onClick={handleSave}
-              className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90"
-            >
-              保存
-            </button>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={onClose}
+                className="rounded-md px-4 py-2 text-gray-600 transition hover:bg-gray-100"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSave}
+                className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90"
+              >
+                保存
+              </button>
+            </div>
           </div>
         </div>
       </div>

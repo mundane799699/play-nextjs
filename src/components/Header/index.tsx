@@ -290,19 +290,26 @@ const Header = () => {
                         !sticky && pathUrl === "/" ? "text-white" : "text-dark"
                       }`}
                     >
-                      {user?.nickName}
+                      <span className="relative inline-flex items-center">
+                        {user?.nickName}
+                        {user?.memberType && (
+                          <span className="ml-1 inline-flex h-[18px] items-center justify-center rounded-[3px] bg-[#e87549] px-0.5 text-[8px] font-medium leading-none text-white">
+                            {user.memberType}
+                          </span>
+                        )}
+                      </span>
                     </Link>
                     {pathUrl !== "/" || sticky ? (
                       <button
                         onClick={() => logout()}
-                        className="signUpBtn rounded-lg bg-primary bg-opacity-100 px-4 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-opacity-20 hover:text-dark"
+                        className="signUpBtn rounded-lg bg-[#e87549] bg-opacity-100 px-4 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-opacity-80 hover:text-white"
                       >
                         退出登录
                       </button>
                     ) : (
                       <button
                         onClick={() => logout()}
-                        className="signUpBtn rounded-lg bg-white bg-opacity-20 px-4 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-opacity-100 hover:text-dark"
+                        className="signUpBtn rounded-lg bg-[#e87549] bg-opacity-90 px-4 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-opacity-100 hover:text-white"
                       >
                         退出登录
                       </button>

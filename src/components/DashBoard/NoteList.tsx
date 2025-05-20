@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 
 import { useDebounce } from "use-debounce";
 
-import { ChevronDown, X, ArrowRightLeft, Shuffle, Mail, Search, Download } from "lucide-react";
+import { ChevronDown, X, ArrowRightLeft, Shuffle, Mail, Search, Download, SortDesc } from "lucide-react";
 
 import { exportNotesService, exportNotesMdService } from "@/services/notes";
 
@@ -14,7 +14,7 @@ import RandomReviewModal from "../Modal/RandomReviewModal";
 import SettingsDialog from "./SettingsDialog";
 import ExportModal from "../Modal/ExportModal";
 
-
+type SortOption = "time" | "bookName" | "timeAsc" | "random";
 
 const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
@@ -28,6 +28,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const [bookName, setBookName] = useState("");
 
   const [totalNotes, setTotalNotes] = useState(0);
+
+  const [sortOption, setSortOption] = useState<SortOption>("time");
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [exportFormat, setExportFormat] = useState<"excel" | "markdown">("excel");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -65,16 +68,33 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   }, []);
 
   useEffect(() => {
+    let sorted = [...notes];
+    
+    // 先应用搜索过滤
     if (debouncedSearchTerm) {
-      const filtered = notes.filter((note: any) => 
+      sorted = sorted.filter((note: any) => 
         note.markText?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
         note.noteContent?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
-      setFilteredNotes(filtered);
-    } else {
-      setFilteredNotes(notes);
     }
-  }, [debouncedSearchTerm, notes]);
+    
+    // 应用排序
+    if (sortOption === "time") {
+      sorted.sort((a: any, b: any) => (b.noteTime || 0) - (a.noteTime || 0));
+    } else if (sortOption === "bookName") {
+      sorted.sort((a: any, b: any) => {
+        const bookNameA = a.bookName?.toLowerCase() || '';
+        const bookNameB = b.bookName?.toLowerCase() || '';
+        return bookNameA.localeCompare(bookNameB);
+      });
+    } else if (sortOption === "timeAsc") {
+      sorted.sort((a: any, b: any) => (a.noteTime || 0) - (b.noteTime || 0));
+    } else if (sortOption === "random") {
+      sorted = sorted.sort(() => 0.5 - Math.random());
+    }
+    
+    setFilteredNotes(sorted);
+  }, [debouncedSearchTerm, notes, sortOption]);
 
 
 
@@ -83,6 +103,21 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
       await exportNotesService(bookId);
     } else if (format === "markdown") {
       await exportNotesMdService(bookId);
+    }
+  };
+  
+  const getSortLabel = () => {
+    switch (sortOption) {
+      case "time":
+        return "按时间降序";
+      case "bookName":
+        return "按书名降序";
+      case "timeAsc":
+        return "按时间升序";
+      case "random":
+        return "随机";
+      default:
+        return "按时间降序";
     }
   };
 
@@ -104,9 +139,67 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
             onClick={() => setIsExportModalOpen(true)}
             className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700"
           >
-            <Download className="mr-1 h-3.5 w-3.5" />
             导出
           </button>
+          
+          <div className="relative">
+            <button
+              onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700"
+            >
+              <span>排序：{getSortLabel()}</span>
+              <ChevronDown className="ml-1 h-3.5 w-3.5" />
+            </button>
+            
+            {sortDropdownOpen && (
+              <div className="absolute left-0 top-full mt-1 w-32 rounded-md border border-gray-200 bg-white py-1 shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    setSortOption("time");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`block w-full px-4 py-1 text-left text-sm ${
+                    sortOption === "time" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  按时间降序
+                </button>
+                <button
+                  onClick={() => {
+                    setSortOption("bookName");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`block w-full px-4 py-1 text-left text-sm ${
+                    sortOption === "bookName" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  按书名降序
+                </button>
+                <button
+                  onClick={() => {
+                    setSortOption("timeAsc");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`block w-full px-4 py-1 text-left text-sm ${
+                    sortOption === "timeAsc" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  按时间升序
+                </button>
+                <button
+                  onClick={() => {
+                    setSortOption("random");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`block w-full px-4 py-1 text-left text-sm ${
+                    sortOption === "random" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  随机
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
 
@@ -204,6 +297,14 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           </div>
         )}
       </ul>
+
+      {/* 点击页面其他地方关闭排序下拉菜单 */}
+      {sortDropdownOpen && (
+        <div 
+          className="fixed inset-0 z-0" 
+          onClick={() => setSortDropdownOpen(false)}
+        />
+      )}
 
       {/* 随机回顾弹窗 */}
       <RandomReviewModal
