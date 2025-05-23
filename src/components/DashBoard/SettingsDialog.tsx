@@ -36,18 +36,18 @@ const SettingsDialog = ({
       console.log("Is Pro:", isPro);
       console.log("Member type:", user?.memberType);
       
-      getSubscriptionByUserId().then((res: any) => {
-        const { code, data } = res;
-        if (code === 200) {
-          const { email, sendTime, subscriptionStatus } = data;
-          setEmail(email);
-          setSelectedTime(sendTime);
+    getSubscriptionByUserId().then((res: any) => {
+      const { code, data } = res;
+      if (code === 200) {
+        const { email, sendTime, subscriptionStatus } = data;
+        setEmail(email);
+        setSelectedTime(sendTime);
           // 只有Pro用户才能开启订阅
           setSubscriptionStatus(isPro ? subscriptionStatus : 0);
-        }
+      }
       }).finally(() => {
         setIsLoading(false);
-      });
+    });
     }
   }, [isOpen, isPro, user]);
 
@@ -121,7 +121,7 @@ const SettingsDialog = ({
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
             <div>
-              <h2 className="text-lg font-medium">邮箱回顾</h2>
+            <h2 className="text-lg font-medium">邮箱回顾</h2>
             </div>
             <button
               onClick={onClose}
@@ -135,37 +135,37 @@ const SettingsDialog = ({
           <div className="space-y-6 p-6">
             {/* Subscription Status */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">开关状态</span>
                 {isLoading ? (
                   <div className="text-sm text-gray-500">正在加载...</div>
                 ) : (
-                  <button
-                    onClick={() => {
+              <button
+                onClick={() => {
                       if (!toggleDisabled) {
-                        setSubscriptionStatus(subscriptionStatus === 1 ? 0 : 1);
+                  setSubscriptionStatus(subscriptionStatus === 1 ? 0 : 1);
                         console.log("切换订阅状态为:", subscriptionStatus === 1 ? 0 : 1);
                       }
-                    }}
+                }}
                     disabled={toggleDisabled}
-                    className={`
-                      relative inline-flex h-6 w-11 items-center rounded-full
-                      ${subscriptionStatus === 1 ? "bg-primary" : "bg-gray-200"}
+                className={`
+                  relative inline-flex h-6 w-11 items-center rounded-full
+                  ${subscriptionStatus === 1 ? "bg-primary" : "bg-gray-200"}
                       ${toggleDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                      transition-colors duration-200 ease-in-out focus:outline-none
-                    `}
+                  transition-colors duration-200 ease-in-out focus:outline-none
+                `}
                     title={isPro ? "点击切换订阅状态" : "需要Pro会员才能开启"}
-                  >
-                    <span
-                      className={`
-                        ${subscriptionStatus === 1 ? "translate-x-6" : "translate-x-1"}
-                        inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out
-                      `}
-                    />
-                    <span className="sr-only">
-                      {subscriptionStatus === 1 ? "取消订阅" : "开启订阅"}
-                    </span>
-                  </button>
+              >
+                <span
+                  className={`
+                    ${subscriptionStatus === 1 ? "translate-x-6" : "translate-x-1"}
+                    inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out
+                  `}
+                />
+                <span className="sr-only">
+                  {subscriptionStatus === 1 ? "取消订阅" : "开启订阅"}
+                </span>
+              </button>
                 )}
               </div>
               
@@ -263,18 +263,18 @@ const SettingsDialog = ({
             </button>
             
             <div className="flex space-x-3">
-              <button
-                onClick={onClose}
-                className="rounded-md px-4 py-2 text-gray-600 transition hover:bg-gray-100"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleSave}
-                className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90"
-              >
-                保存
-              </button>
+            <button
+              onClick={onClose}
+              className="rounded-md px-4 py-2 text-gray-600 transition hover:bg-gray-100"
+            >
+              取消
+            </button>
+            <button
+              onClick={handleSave}
+              className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90"
+            >
+              保存
+            </button>
             </div>
           </div>
         </div>

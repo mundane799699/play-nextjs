@@ -77,16 +77,16 @@ const BookList = () => {
       {/* 顶部区域：书籍数量和搜索框 */}
       <div className="mt-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-gray-600">
+          <span className="text-gray-600 text-sm sm:text-base">
             共<span className="font-medium">{filteredBooks.length}本</span>
           </span>
           <button
             onClick={() => setShowStats(true)}
-            className="flex items-center gap-1 rounded-md bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 relative"
+            className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 relative"
             title="查看统计分析"
           >
             <BarChart2 className="h-3.5 w-3.5" />
-            <span>统计</span>
+            <span className="hidden sm:inline">统计</span>
             <span className="absolute -top-1.5 -right-1.5 text-[9px] text-primary">beta</span>
           </button>
         </div>
@@ -97,7 +97,7 @@ const BookList = () => {
           </div>
           <input
             type="text"
-            className="w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-32 sm:w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             placeholder="输入书籍名称"
             value={searchQuery}
             onChange={handleSearchChange}
@@ -151,7 +151,7 @@ const BookList = () => {
             未找到匹配的书籍
           </li>
         )}
-      </ul>
+    </ul>
       
       {/* 统计分析弹窗 */}
       <StatsDialog 

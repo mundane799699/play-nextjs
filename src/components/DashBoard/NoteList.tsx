@@ -125,29 +125,34 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
   return (
 
-    <div className="py-4">
+    <div className="py-4 px-2 sm:px-4">
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
 
-        <div className="flex items-center space-x-4">
-          <span className="text-gray-600">
+        <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
+          <span className="text-gray-600 text-xs sm:text-base whitespace-nowrap">
             {bookName ? `${bookName}：` : '共'}
             <span className="font-medium">{filteredNotes.length}/{totalNotes}条</span>
           </span>
 
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700"
+            className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+            title="导出"
           >
-            导出
+            <Download className="h-4 w-4" />
+            <span className="ml-1 hidden lg:inline">导出</span>
           </button>
           
           <div className="relative">
             <button
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700"
+              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+              title={`排序：${getSortLabel()}`}
             >
-              <span>排序：{getSortLabel()}</span>
+              <SortDesc className="h-4 w-4" />
+              <span className="ml-1 hidden lg:inline">排序：{getSortLabel()}</span>
+              <span className="ml-1 hidden sm:inline lg:hidden">排序</span>
               <ChevronDown className="ml-1 h-3.5 w-3.5" />
             </button>
             
@@ -204,39 +209,41 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
 
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 flex-shrink min-w-0">
             <button
             onClick={() => setIsSettingsDialogOpen(true)}
-            className="group relative flex items-center px-4 py-2 text-gray-600 transition duration-300 hover:text-gray-800"
+            className="group relative flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
+            title="邮箱回顾"
             >
-            <Mail className="mr-1 h-4 w-4" />
-            <span className="relative">
+            <Mail className="h-4 w-4" />
+            <span className="relative ml-1 hidden lg:inline whitespace-nowrap">
               邮箱回顾
               <span className="ml-0.5 inline-block translate-y-[-3px] rounded-sm bg-primary/80 px-0.5 text-[6px] font-normal uppercase leading-3 text-white opacity-80">pro</span>
             </span>
             </button>
             <button
             onClick={() => setIsRandomReviewOpen(true)}
-            className="flex items-center px-4 py-2 text-gray-600 transition duration-300 hover:text-gray-800"
+            className="flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
+            title="随机回顾"
           >
-            <Shuffle className="mr-1 h-4 w-4" />
-            随机回顾
+            <Shuffle className="h-4 w-4" />
+            <span className="ml-1 hidden lg:inline whitespace-nowrap">随机回顾</span>
           </button>
-          <div className="relative w-64">
+          <div className="relative w-24 sm:w-32 md:w-48 lg:w-64 min-w-0">
             <input
               type="text"
-              placeholder="输入笔记内容或书名"
+              placeholder="搜索笔记"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              className="w-full rounded-md border border-gray-300 py-2 pl-8 pr-4 text-sm text-gray-700 focus:border-primary focus:outline-none"
             />
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500"
             >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3" />
             </button>
             )}
           </div>
