@@ -1,15 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BsCheckCircle } from "react-icons/bs";
 import PaymentModal from "@/components/PaymentModal";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/context/AuthContext";
+import { fetchMemberInfo } from "@/services/user";
 
 export default function VIPPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"PLUS" | "PRO">("PLUS");
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const [userMemberType, setUserMemberType] = useState<string>("");
+
+  useEffect(() => {
+    // 获取用户会员信息
+    if (user) {
+      fetchMemberInfo().then((res: any) => {
+        const { code, data } = res;
+        if (code === 200) {
+          setUserMemberType(data.memberType || "FREE");
+        }
+      }).catch(() => {
+        // 如果获取失败，使用用户基本信息中的memberType
+        setUserMemberType(user.memberType || "FREE");
+      });
+    } else {
+      setUserMemberType("FREE");
+    }
+  }, [user]);
 
   const handleOpenModal = (planType: "PLUS" | "PRO") => {
     setSelectedPlan(planType);
@@ -60,6 +81,17 @@ export default function VIPPage() {
                 </li>
               </ul>
             </div>
+
+            <div className="mt-auto">
+              {userMemberType === "FREE" ? (
+                <button
+                  disabled
+                  className="w-full rounded-lg bg-white border border-gray-200 px-4 py-3 text-sm font-medium text-dark transition-colors"
+                >
+                  您当前的套餐
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {/* Plus 套餐 */}
@@ -98,12 +130,31 @@ export default function VIPPage() {
             </div>
 
             <div className="mt-auto">
-              <button
-                onClick={() => handleOpenModal("PLUS")}
-                className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
-              >
-                获取 Plus
-              </button>
+              {userMemberType === "PLUS" ? (
+                <div>
+                  <button
+                    disabled
+                    className="w-full rounded-lg bg-white border border-gray-200 px-4 py-3 text-sm font-medium text-dark transition-colors"
+                  >
+                    您当前的套餐
+                  </button>
+                  <Link 
+                    href="https://v3oxu28gnc.feishu.cn/docx/EQvqdMm3WoqlBjxT7ASc3u0wnKf"
+                    className="mt-2 block text-xs text-center text-primary hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    联系我们补差价升级为Pro版
+                  </Link>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleOpenModal("PLUS")}
+                  className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
+                >
+                  获取 Plus
+                </button>
+              )}
             </div>
           </div>
 
@@ -146,12 +197,21 @@ export default function VIPPage() {
             </div>
 
             <div className="mt-auto">
-              <button
-                onClick={() => handleOpenModal("PRO")}
-                className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:opacity-90"
-              >
-                获取 Pro
-              </button>
+              {userMemberType === "PRO" ? (
+                <button
+                  disabled
+                  className="w-full rounded-lg bg-white border border-gray-200 px-4 py-3 text-sm font-bold text-dark transition-colors"
+                >
+                  您当前的套餐
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleOpenModal("PRO")}
+                  className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:opacity-90"
+                >
+                  获取 Pro
+                </button>
+              )}
             </div>
           </div>
         </div>
