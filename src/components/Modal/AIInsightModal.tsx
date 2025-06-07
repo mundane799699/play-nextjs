@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { X, Brain, Copy, Check, RefreshCw } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Brain, Copy, Check, RefreshCw, Image } from "lucide-react";
 import { Note } from "@/types/note";
 import { getAIInsightStream, getAIInsight } from "@/services/ai";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import html2canvas from "html2canvas";
+import toast from "react-hot-toast";
 
 interface AIInsightModalProps {
   isOpen: boolean;
@@ -20,6 +22,8 @@ const AIInsightModal: React.FC<AIInsightModalProps> = ({
   const [error, setError] = useState<string>("");
   const [isCopied, setIsCopied] = useState(false);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && note) {
@@ -108,6 +112,53 @@ const AIInsightModal: React.FC<AIInsightModalProps> = ({
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const handleCopyAsImage = async () => {
+    if (!captureRef.current || !insight) return;
+    
+    setIsCapturing(true);
+    try {
+      const canvas = await html2canvas(captureRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        width: 800,
+        height: captureRef.current.scrollHeight,
+      });
+      
+      // 将canvas转换为blob
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+                         await navigator.clipboard.write([
+               new ClipboardItem({
+                 'image/png': blob
+               })
+             ]);
+             toast.success('已复制图片到剪切板');
+             setIsCopied(true);
+             setTimeout(() => setIsCopied(false), 2000);
+          } catch (err) {
+            console.error('复制图片失败:', err);
+            // 如果复制失败，尝试下载
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AI洞察-${note?.bookName || '笔记'}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+        }
+      }, 'image/png');
+    } catch (err) {
+      console.error('生成图片失败:', err);
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
   const handleRetry = () => {
     fetchAIInsight();
   };
@@ -156,6 +207,14 @@ const AIInsightModal: React.FC<AIInsightModalProps> = ({
                     title="重新分析"
                   >
                     <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  </button>
+                  <button
+                    onClick={handleCopyAsImage}
+                    disabled={isCapturing}
+                    className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300 disabled:opacity-50"
+                    title="复制为图片"
+                  >
+                    <Image className={`h-4 w-4 ${isCapturing ? 'animate-pulse' : ''}`} />
                   </button>
                   <button
                     onClick={handleCopy}
@@ -243,9 +302,64 @@ const AIInsightModal: React.FC<AIInsightModalProps> = ({
             </div>
           )}
         </div>
-
-
       </div>
+
+      {/* 用于截图的隐藏容器 */}
+      {insight && (
+        <div 
+          ref={captureRef}
+          className="fixed -left-[9999px] -top-[9999px] w-[800px] bg-white p-8"
+          style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+        >
+          {/* 头部区域 */}
+          <div className="flex items-center justify-between mb-6">
+            {/* 左上角产品名 */}
+            <div>
+              <span className="text-lg font-semibold" style={{ color: 'rgb(255, 114, 95)' }}>ReadEcho</span>
+            </div>
+            {/* 右上角标题 */}
+            <div>
+              <span className="text-sm text-gray-500">AI洞察你的微信读书笔记</span>
+            </div>
+          </div>
+
+          {/* 笔记信息 */}
+          {note && (
+            <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <div className="text-sm text-gray-600 mb-3">
+                <span className="font-medium">当前笔记：</span>
+                {note.chapterName
+                  ? `${note.bookName} / ${note.chapterName}`
+                  : note.bookName}
+              </div>
+              {note.markText && (
+                <div className="relative pl-4 mb-3">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF725F] rounded-full"></div>
+                  <blockquote className="text-base text-gray-700 font-medium">
+                    {note.markText}
+                  </blockquote>
+                </div>
+              )}
+              {note.noteContent && (
+                <div className="text-base text-gray-800 leading-relaxed">
+                  {note.noteContent}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* AI洞察内容 */}
+          <div className="prose prose-gray max-w-none mb-8">
+            <MarkdownRenderer 
+              content={insight} 
+              className="text-gray-800 leading-relaxed text-base"
+            />
+          </div>
+
+          {/* 底部分割线 */}
+          <div className="pt-6 border-t border-gray-200"></div>
+        </div>
+      )}
     </div>
   );
 };
