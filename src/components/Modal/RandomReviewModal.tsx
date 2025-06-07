@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { X, Shuffle, Share2, Copy, Check } from "lucide-react";
+import { X, Shuffle, Share2, Copy, Check, Brain } from "lucide-react";
 import { Note } from "@/types/note";
 import { getRandomReview } from "@/services/notes";
 import dayjs from "dayjs";
 import ShareDialog from "@/components/DashBoard/ShareDialog";
+import AIInsightModal from "./AIInsightModal";
 
 interface RandomReviewModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const RandomReviewModal: React.FC<RandomReviewModalProps> = ({
   const [readCount, setReadCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showAIInsightModal, setShowAIInsightModal] = useState(false);
 
   // 解决闪烁问题：使用独立的 useEffect 来设置 isLoading，确保初次渲染时保持稳定
   useEffect(() => {
@@ -84,9 +86,22 @@ const RandomReviewModal: React.FC<RandomReviewModalProps> = ({
             </span>
           </div>
           <div className="flex items-center space-x-4">
+            {currentNote && (
+              <button
+                onClick={() => setShowAIInsightModal(true)}
+                className="relative px-3 py-1.5 text-sm text-gray-500 bg-gray-100 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-200 rounded-lg"
+                title="AI洞察分析"
+              >
+                AI洞察
+                <span className="absolute -top-1 -right-1 px-0.5 py-0.5 text-xs bg-red-400 text-white rounded-full text-[8px] leading-none">
+                  Beta
+                </span>
+              </button>
+            )}
             <button
               onClick={handleCopy}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              title="复制笔记"
             >
               {isCopied ? (
                 <Check className="h-4 w-4" />
@@ -98,6 +113,7 @@ const RandomReviewModal: React.FC<RandomReviewModalProps> = ({
               <button
                 onClick={() => setShowShareDialog(true)}
                 className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                title="分享笔记"
               >
                 <Share2 className="h-4 w-4" />
               </button>
@@ -174,6 +190,13 @@ const RandomReviewModal: React.FC<RandomReviewModalProps> = ({
           note={currentNote}
         />
       )}
+
+      {/* AI洞察弹窗 */}
+      <AIInsightModal
+        isOpen={showAIInsightModal}
+        onClose={() => setShowAIInsightModal(false)}
+        note={currentNote}
+      />
     </div>
   );
 };

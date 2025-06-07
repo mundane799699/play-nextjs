@@ -14,10 +14,12 @@ import {
   Image,
   Settings,
   ArrowUp,
+  Brain,
 } from "lucide-react";
 import dayjs from "dayjs";
 import Modal from "@/components/DashBoard/Modal";
 import SettingsDialog from "@/components/DashBoard/SettingsDialog";
+import AIInsightModal from "@/components/Modal/AIInsightModal";
 
 const backgrounds = [
   "/images/backgrounds/bg1.png",
@@ -39,6 +41,7 @@ const Page = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showAIInsightModal, setShowAIInsightModal] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -191,6 +194,18 @@ const Page = () => {
                           : "text-white/90"
               }`}
             >
+              {currentNote && (
+                <button
+                  onClick={() => setShowAIInsightModal(true)}
+                  className="relative rounded-lg p-2 transition-colors hover:bg-black/10"
+                  title="AI洞察分析"
+                >
+                  <Brain className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 px-0.5 py-0.5 text-xs bg-red-400 text-white rounded-full text-[8px] leading-none">
+                    AI
+                  </span>
+                </button>
+              )}
               <button
                 onClick={handleCopy}
                 className="rounded-lg p-2 transition-colors hover:bg-black/10"
@@ -454,6 +469,13 @@ const Page = () => {
       <ShareDialog
         isOpen={showShareDialog}
         onClose={() => setShowShareDialog(false)}
+        note={currentNote}
+      />
+
+      {/* AI洞察弹窗 */}
+      <AIInsightModal
+        isOpen={showAIInsightModal}
+        onClose={() => setShowAIInsightModal(false)}
         note={currentNote}
       />
 
