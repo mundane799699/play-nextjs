@@ -2,13 +2,6 @@ import { Menu } from "@/types/menu";
 
 const menuData: Menu[] = [
   {
-    id: 1,
-    title: "首页",
-    path: "/",
-    newTab: false,
-    needLogin: false,
-  },
-  {
     id: 2,
     title: "笔记",
     path: "/dashboard",

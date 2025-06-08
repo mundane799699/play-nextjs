@@ -38,7 +38,7 @@ export default function VIPPage() {
   };
 
   // 获取主题相关颜色
-  const primaryColor = "#e87549"; // 从tailwind.config.ts中获取的主题色
+  const primaryColor = "#d97b53"; // 从tailwind.config.ts中获取的主题色
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-16 dark:bg-gray-900 sm:px-6 lg:px-8">

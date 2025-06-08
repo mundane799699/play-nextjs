@@ -174,7 +174,7 @@ const SettingsDialog = ({
                   href="https://readecho.cn/vip" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-1 inline-block text-xs text-[#e87549] hover:underline"
+                  className="mt-1 inline-block text-xs text-[#d97b53] hover:underline"
                 >
                   开通Pro版，每日收到一封读过的书籍笔记
                 </a>

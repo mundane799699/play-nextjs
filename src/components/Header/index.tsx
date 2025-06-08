@@ -45,6 +45,38 @@ const Header = () => {
     }
   };
 
+  // User dropdown handler
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const handleUserDropdown = () => {
+    setUserDropdownOpen(!userDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (userDropdownOpen && !target.closest('.user-dropdown')) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    if (userDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [userDropdownOpen]);
+
   const meetPath = (menu: Menu) => {
     if (!menu.path) return false;
     if (menu.path === "/") return pathUrl === "/";
@@ -59,6 +91,50 @@ const Header = () => {
       setShowLoginModal(true);
     }
   };
+
+  // User dropdown menu items
+  const userMenuItems = [
+    {
+      title: "个人资料",
+      href: "/profile",
+      isExternal: false,
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+    },
+    {
+      title: "下载插件",
+      href: "https://chromewebstore.google.com/detail/readecho-%E5%90%8C%E6%AD%A5%E4%BD%A0%E7%9A%84%E5%BE%AE%E4%BF%A1%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/ibinnfpnfbcfdblmjpmjjmffcjlcadig",
+      isExternal: true,
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+    },
+    {
+      title: "帮助文档",
+      href: "https://v3oxu28gnc.feishu.cn/docx/EQvqdMm3WoqlBjxT7ASc3u0wnKf",
+      isExternal: true,
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+    },
+    {
+      title: "问题反馈",
+      href: "https://v3oxu28gnc.feishu.cn/share/base/form/shrcnkfjw54oxlXzI5cQPvLynKc",
+      isExternal: true,
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -284,36 +360,83 @@ const Header = () => {
               <div className="hidden items-center justify-end pr-16 sm:flex lg:pr-0">
                 {user?.userName ? (
                   <>
-                    <Link
-                      href="/profile"
-                      className={`loginBtn px-7 py-3 text-base font-medium transition-opacity hover:opacity-80 ${
-                        !sticky && pathUrl === "/" ? "text-white" : "text-dark"
-                      }`}
-                    >
-                      <span className="relative inline-flex items-center">
-                      {user?.nickName}
-                        {user?.memberType && (
-                          <span className="ml-1 inline-flex h-[18px] items-center justify-center rounded-[3px] bg-[#e87549] px-0.5 text-[8px] font-medium leading-none text-white">
-                            {user.memberType}
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                    {pathUrl !== "/" || sticky ? (
+                    <div className="relative user-dropdown">
                       <button
-                        onClick={() => logout()}
-                        className="signUpBtn rounded-lg bg-[#e87549] bg-opacity-100 px-4 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-opacity-80 hover:text-white"
+                        onClick={handleUserDropdown}
+                        className={`loginBtn flex items-center px-7 py-3 text-base font-medium transition-opacity hover:opacity-80 ${
+                          !sticky && pathUrl === "/" ? "text-white" : "text-dark"
+                        }`}
                       >
-                        退出登录
+                        <span className="relative inline-flex items-center">
+                          {user?.nickName}
+                          {user?.memberType && (
+                            <span className="ml-1 inline-flex h-[18px] items-center justify-center rounded-[3px] bg-[#d97b53] px-0.5 text-[8px] font-medium leading-none text-white">
+                              {user.memberType}
+                            </span>
+                          )}
+                        </span>
+                        <svg
+                          className={`ml-2 h-4 w-4 transition-transform duration-200 ${
+                            userDropdownOpen ? "rotate-180" : ""
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
                       </button>
-                    ) : (
-                      <button
-                        onClick={() => logout()}
-                        className="signUpBtn rounded-lg bg-[#e87549] bg-opacity-90 px-4 py-2 text-sm font-medium text-white duration-300 ease-in-out hover:bg-opacity-100 hover:text-white"
+
+                      {/* User Dropdown Menu */}
+                      <div
+                        className={`absolute right-0 top-full mt-2 w-40 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 dark:bg-dark-2 dark:ring-white dark:ring-opacity-10 ${
+                          userDropdownOpen
+                            ? "visible opacity-100 translate-y-0"
+                            : "invisible opacity-0 -translate-y-2"
+                        }`}
                       >
-                        退出登录
-                      </button>
-                    )}
+                        <div className="py-1">
+                          {userMenuItems.map((item, index) => (
+                            item.isExternal ? (
+                              <a
+                                key={index}
+                                href={item.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                                onClick={() => setUserDropdownOpen(false)}
+                              >
+                                {item.icon}
+                                {item.title}
+                              </a>
+                            ) : (
+                              <Link
+                                key={index}
+                                href={item.href}
+                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                                onClick={() => setUserDropdownOpen(false)}
+                              >
+                                {item.icon}
+                                {item.title}
+                              </Link>
+                            )
+                          ))}
+                          <hr className="my-1 border-gray-200 dark:border-gray-600" />
+                          <button
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              logout();
+                            }}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            退出登录
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <>

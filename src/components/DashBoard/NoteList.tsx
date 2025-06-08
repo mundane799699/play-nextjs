@@ -163,8 +163,8 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
                     setSortOption("time");
                     setSortDropdownOpen(false);
                   }}
-                  className={`block w-full px-4 py-1 text-left text-sm ${
-                    sortOption === "time" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  className={`rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "time" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   按时间降序
@@ -174,8 +174,8 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
                     setSortOption("bookName");
                     setSortDropdownOpen(false);
                   }}
-                  className={`block w-full px-4 py-1 text-left text-sm ${
-                    sortOption === "bookName" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  className={`rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "bookName" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   按书名降序
@@ -185,8 +185,8 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
                     setSortOption("timeAsc");
                     setSortDropdownOpen(false);
                   }}
-                  className={`block w-full px-4 py-1 text-left text-sm ${
-                    sortOption === "timeAsc" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  className={`rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "timeAsc" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   按时间升序
@@ -196,8 +196,8 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
                     setSortOption("random");
                     setSortDropdownOpen(false);
                   }}
-                  className={`block w-full px-4 py-1 text-left text-sm ${
-                    sortOption === "random" ? "bg-gray-100 text-[#e87549]" : "text-gray-700 hover:bg-gray-50"
+                  className={`rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "random" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   随机
