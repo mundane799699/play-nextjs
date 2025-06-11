@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const TabComponent = () => {
+interface TabComponentProps {
+  onAIChatToggle?: () => void;
+  isAIChatOpen?: boolean;
+}
+
+const TabComponent = ({ onAIChatToggle, isAIChatOpen }: TabComponentProps) => {
   const pathname = usePathname();
 
   return (
-    <div className="flex justify-center border-b border-[#b4b2a7]">
-      <div className="flex flex-1 justify-end">
+    <div className={`flex justify-between items-center border-b border-[#b4b2a7] transition-all duration-300 ${isAIChatOpen ? 'mr-[320px]' : ''}`}>
+      <div className={`flex-1 ${isAIChatOpen ? 'max-w-[100px]' : ''}`}></div>
+      <div className={`flex gap-4 transition-all duration-300 ${isAIChatOpen ? 'transform -translate-x-[80px]' : ''}`}>
         <Link
           href="/dashboard"
           className={`px-4 py-2 ${
@@ -19,9 +25,6 @@ const TabComponent = () => {
         >
           书架
         </Link>
-      </div>
-      <div className="w-4"></div>
-      <div className="flex flex-1">
         <Link
           href="/dashboard/notes"
           className={`px-4 py-2 ${
@@ -32,6 +35,16 @@ const TabComponent = () => {
         >
           笔记
         </Link>
+      </div>
+      <div className="flex-1 flex justify-end">
+        {!isAIChatOpen && (
+          <button
+            onClick={onAIChatToggle}
+            className="px-4 py-2 text-gray-500 hover:text-gray-700"
+          >
+            AI问书
+          </button>
+        )}
       </div>
     </div>
   );

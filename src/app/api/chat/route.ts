@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Hardcode the API key temporarily for testing
-const API_KEY = 'sk-bce5be17be9d4b8182cd6e4424ebc7b1';
+const API_KEY = 'sk-5541239aecd84baf8bb20c2432836dd6';
 
 export async function POST(req: Request) {
   try {
