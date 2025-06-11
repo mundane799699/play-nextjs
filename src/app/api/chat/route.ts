@@ -87,10 +87,13 @@ export async function POST(req: NextRequest) {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'deepseek-reasoner', // 必需的model字段
-        ...body,
+        model: body.model || 'deepseek-chat',
         messages: enhancedMessages,
-        stream: true
+        stream: true,
+        temperature: body.temperature,
+        max_tokens: body.max_tokens,
+        top_p: body.top_p,
+        // 不直接展开body，避免覆盖messages
       })
     });
 

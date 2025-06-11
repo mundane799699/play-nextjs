@@ -13,7 +13,14 @@ const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    console.log('=== API调试信息 ===');
     console.log('Request body:', body);
+    console.log('body.messages:', body.messages);
+    console.log('body.messages长度:', body.messages?.length);
+    if (body.messages && body.messages.length > 0) {
+      console.log('第一条消息（应该是system）:', body.messages[0]);
+      console.log('最后一条消息:', body.messages[body.messages.length - 1]);
+    }
 
     // 获取用户token用于MCP调用
     const token = req.cookies.get("Admin-Token")?.value;
@@ -84,24 +91,131 @@ export async function POST(req: NextRequest) {
                 const contextInfo = formatMCPResultsForAI(mcpResults);
                 console.log('MCP查询成功，增强上下文长度:', contextInfo.length);
                 
-                // 创建增强的消息数组
+                // 获取system消息内容
+                const systemMessage = messages.find((msg: any) => msg.role === 'system');
+                const systemContent = systemMessage ? systemMessage.content : `你是一位读书导师，帮助用户理解和运用他们读过的书。
+
+**工作流程：**
+1. 先搜索用户的书架、划线和笔记
+2. 基于搜索结果回答用户问题
+
+**回答原则：**
+- 围绕用户的问题和相关书籍内容回答
+- 像朋友聊天一样，用日常语言，避免学术词汇
+- 回答控制在200字内，用换行和列表让内容清晰
+- 结尾提一个启发性问题
+
+**没有相关内容时：**
+直接回答用户问题，或推荐一些可以问的问题。
+
+记住：你的核心任务是通过用户的阅读记录，帮助他们获得更深的理解。`;
+
+                // 创建增强的消息数组，将system内容直接融入用户消息
+                const enhancedUserContent = `${systemContent}
+
+---
+用户问题: ${lastUserMessage.content}
+${contextInfo}
+
+请按照上述规范回答用户问题。`;
+
                 enhancedMessages = [
-                  ...messages.slice(0, -1), // 除最后一条用户消息外的所有消息
+                  // 跳过system消息，只保留非system的历史消息
+                  ...messages.filter((msg: any) => msg.role !== 'system').slice(0, -1),
                   {
-                    ...lastUserMessage,
-                    content: lastUserMessage.content + contextInfo
+                    role: 'user',
+                    content: enhancedUserContent
                   }
                 ];
                 
-                console.log('消息增强完成');
+                console.log('消息增强完成 - 已将system内容融入用户消息');
               } else {
                 console.log('MCP查询无结果，使用原始消息');
+                // 即使没有MCP结果，也要将system内容融入用户消息
+                const systemMessage = messages.find((msg: any) => msg.role === 'system');
+                const systemContent = systemMessage ? systemMessage.content : `你是一位读书导师，帮助用户理解和运用他们读过的书。
+
+**工作流程：**
+1. 先搜索用户的书架、划线和笔记
+2. 基于搜索结果回答用户问题
+
+**回答原则：**
+- 围绕用户的问题和相关书籍内容回答
+- 像朋友聊天一样，用日常语言，避免学术词汇
+- 回答控制在200字内，用换行和列表让内容清晰
+- 结尾提一个启发性问题
+
+**没有相关内容时：**
+直接回答用户问题，或推荐一些可以问的问题。
+
+记住：你的核心任务是通过用户的阅读记录，帮助他们获得更深的理解。`;
+
+                const enhancedUserContent = `${systemContent}
+
+---
+用户问题: ${lastUserMessage.content}
+
+请按照上述规范回答用户问题。`;
+
+                enhancedMessages = [
+                  // 跳过system消息，只保留非system的历史消息
+                  ...messages.filter((msg: any) => msg.role !== 'system').slice(0, -1),
+                  {
+                    role: 'user',
+                    content: enhancedUserContent
+                  }
+                ];
               }
             } else {
               console.log('无需MCP查询，使用原始消息');
+              // 即使无需MCP，也要将system内容融入用户消息以确保AI遵循规范
+              if (lastUserMessage) {
+                const systemMessage = messages.find((msg: any) => msg.role === 'system');
+                const systemContent = systemMessage ? systemMessage.content : `你是一位读书导师，帮助用户理解和运用他们读过的书。
+
+**工作流程：**
+1. 先搜索用户的书架、划线和笔记
+2. 基于搜索结果回答用户问题
+
+**回答原则：**
+- 围绕用户的问题和相关书籍内容回答
+- 像朋友聊天一样，用日常语言，避免学术词汇
+- 回答控制在200字内，用换行和列表让内容清晰
+- 结尾提一个启发性问题
+
+**没有相关内容时：**
+直接回答用户问题，或推荐一些可以问的问题。
+
+记住：你的核心任务是通过用户的阅读记录，帮助他们获得更深的理解。`;
+
+                const enhancedUserContent = `${systemContent}
+
+---
+用户问题: ${lastUserMessage.content}
+
+请按照上述规范回答用户问题。`;
+
+                enhancedMessages = [
+                  // 跳过system消息，只保留非system的历史消息
+                  ...messages.filter((msg: any) => msg.role !== 'system').slice(0, -1),
+                  {
+                    role: 'user',
+                    content: enhancedUserContent
+                  }
+                ];
+              }
             }
           } else {
             console.log('无用户消息或禁用MCP，跳过MCP查询');
+            // 即使跳过MCP，也要处理system消息
+            if (messages.length > 0) {
+              const systemMessage = messages.find((msg: any) => msg.role === 'system');
+              if (systemMessage) {
+                // 如果有system消息但没有用户消息要处理，直接移除system消息
+                // 因为Deepseek可能不能很好处理单独的system消息
+                enhancedMessages = messages.filter((msg: any) => msg.role !== 'system');
+              }
+            }
           }
           
           // 清除MCP状态
@@ -110,21 +224,36 @@ export async function POST(req: NextRequest) {
           // 添加详细调试信息
           console.log('准备调用AI API...');
           console.log('增强后的消息数量:', enhancedMessages.length);
-          console.log('最后一条消息预览:', enhancedMessages[enhancedMessages.length - 1]?.content?.substring(0, 200) + '...');
+          if (enhancedMessages.length > 0) {
+            console.log('第一条消息:', enhancedMessages[0]);
+            console.log('最后一条消息预览:', enhancedMessages[enhancedMessages.length - 1]?.content?.substring(0, 200) + '...');
+          }
           
           // 调用AI API
+          const requestBody = {
+            model: body.model || 'deepseek-chat',
+            messages: enhancedMessages,
+            stream: true,
+            temperature: body.temperature || 0.7,
+            max_tokens: body.max_tokens || 2000,
+            top_p: body.top_p || 0.95,
+          };
+          
+          console.log('=== 发送给AI API的完整请求体 ===');
+          console.log('Request body model:', requestBody.model);
+          console.log('Request body messages数量:', requestBody.messages.length);
+          console.log('完整的messages列表:');
+          requestBody.messages.forEach((msg: any, index: number) => {
+            console.log(`  消息${index}: role="${msg.role}", content前100字="${msg.content.substring(0, 100)}..."`);
+          });
+          
           const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${API_KEY}`
             },
-            body: JSON.stringify({
-              model: 'deepseek-reasoner', // 必需的model字段
-              ...body,
-              messages: enhancedMessages,
-              stream: true
-            })
+            body: JSON.stringify(requestBody)
           });
 
           console.log('AI API响应状态:', response.status, response.statusText);

@@ -107,7 +107,7 @@ const AiEchoPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: "deepseek-reasoner",
+          model: "deepseek-chat",
           messages: [
             {
               "role": "system", 

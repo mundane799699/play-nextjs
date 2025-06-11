@@ -54,7 +54,7 @@ export default function MCPTestPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'deepseek-reasoner',
+          model: 'deepseek-chat',
           messages: [
             { role: 'user', content: '从我的阅读中，关于时间管理有什么深刻的智慧启发？' }
           ],

@@ -167,9 +167,8 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "deepseek-reasoner",
-          messages,
-          useMCP: true  // 默认启用MCP
+          model: "deepseek-chat",
+          messages
         })
       });
       
