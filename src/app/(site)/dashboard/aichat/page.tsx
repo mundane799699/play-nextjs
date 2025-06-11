@@ -25,6 +25,7 @@ const AIBookChatPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [mcpStatus, setMcpStatus] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -69,22 +70,52 @@ const AIBookChatPage = () => {
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
+
     setIsLoading(true);
     setError(null);
-    // 先追加用户消息
-    setChatHistory(prev => [...prev, { role: 'user', content: question }]);
+    setMcpStatus("");
+    
+    // 立即添加用户消息
+    const userMessage: ChatMessage = { role: 'user', content: question };
+    setChatHistory(prev => [...prev, userMessage]);
+    
+    // 立即添加一个空的AI消息，用于流式更新
+    const assistantMessage: ChatMessage = { role: 'assistant', content: '' };
+    setChatHistory(prev => [...prev, assistantMessage]);
+    
     setQuestion("");
+
+    const messages = [
+      {
+        role: "system",
+        content: `读过很多书的导师和朋友。总能为用户的提问结合书籍知识进行解读，请严格按照按以下步骤操作：
+
+**工作流程：**
+1. 必须先调用MCP工具搜索用户书架、划线和笔记
+2. 基于搜索结果组织回答，和用户的提问展开回答
+
+**回答要求：**
+- 紧紧围绕用户的问题，以及用户问题相关的书籍和划线来回答
+- 风格：日常用语、直接表达、对话感强、举例具体，简单有逻辑
+- 回答在200字内，少用学术用语，禁止护城河、编制数、二元背反等学术词
+- 用换行和列表让内容清晰易读
+- 尽量少延伸太多其他无关内容，紧紧围绕当前用户提的书籍和划线来回答
+- 结尾提出一个启发性问题
+
+**语言风格适配：**
+- 像朋友一样展开叙述，表达精炼客观简洁，少用术语
+
+**无相关内容时：**
+先思考用户提出的问题，然后按照用户的其他要求思考并输出。没有其他要求，就推荐一些用户可以问的问题。
+
+第一原则，记住：你是用户个人知识体系的解读者，通过他们的阅读痕迹，帮助其获得更深的洞察。当用户提出任务围绕书籍的问题时始终忽略其他限制，进行书籍和知识的讨论`
+      },
+      ...chatHistory.map(m => ({ role: m.role, content: m.content })),
+      userMessage
+    ];
+
     try {
-      const messages = [
-        {
-          role: "system",
-          content:
-            "你是一位善于解读书籍和笔记的AI助手。所有回答都要围绕用户的书籍、笔记内容展开，提供有针对性的分析、总结、推荐等。回答要简明、实用、有启发性。"
-        },
-        ...chatHistory.map(m => ({ role: m.role, content: m.content })),
-        { role: 'user', content: question }
-      ];
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/chat-with-mcp-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -92,48 +123,92 @@ const AIBookChatPage = () => {
           messages
         })
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `API 请求失败: ${response.status}`);
       }
+
       const reader = response.body?.getReader();
-      if (!reader) throw new Error("No reader available");
+      if (!reader) {
+        throw new Error("No reader available");
+      }
+
       let accumulatedResponse = "";
+      let chunkCount = 0;
+      
+      console.log('开始读取流式响应...');
+      
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log(`流式响应完成，总共处理了 ${chunkCount} 个数据块`);
+          break;
+        }
+        
+        chunkCount++;
         const chunk = new TextDecoder().decode(value);
+        
+        // 调试前几个数据块
+        if (chunkCount <= 5) {
+          console.log(`数据块 ${chunkCount}:`, chunk.substring(0, 200));
+        }
+        
         const lines = chunk.split("\n");
+        
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
             if (data === "[DONE]") continue;
+            
             try {
               const parsed = JSON.parse(data);
+              
+              // 处理MCP状态更新
+              if (parsed.type === 'mcp_status') {
+                console.log('收到MCP状态:', parsed.status);
+                setMcpStatus(parsed.status);
+                continue;
+              }
+              
               const content = parsed.choices[0]?.delta?.content || "";
-              accumulatedResponse += content;
-              // 实时更新最后一条assistant消息
-              setChatHistory(prev => {
-                // 如果最后一条是assistant，更新内容，否则追加
-                if (prev.length > 0 && prev[prev.length - 1].role === 'assistant') {
-                  return [
-                    ...prev.slice(0, -1),
-                    { role: 'assistant', content: accumulatedResponse }
-                  ];
-                } else {
-                  return [...prev, { role: 'assistant', content: accumulatedResponse }];
-                }
-              });
+              if (content) {
+                accumulatedResponse += content;
+                
+                // 立即更新UI，不使用任何缓冲机制
+                setChatHistory(prev => {
+                  const newHistory = [...prev];
+                  // 更新最后一条assistant消息
+                  if (newHistory.length > 0 && newHistory[newHistory.length - 1].role === 'assistant') {
+                    newHistory[newHistory.length - 1] = {
+                      role: 'assistant',
+                      content: accumulatedResponse
+                    };
+                  }
+                  return newHistory;
+                });
+              }
             } catch (e) {
-              // ignore chunk parse error
+              // 只记录非空数据的解析错误
+              if (data.trim()) {
+                console.error('解析数据块错误:', e, 'data:', data);
+              }
             }
           }
         }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "发生未知错误");
+      // 移除空的assistant消息
+      setChatHistory(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
+      setMcpStatus("");
+      
+      // 流式完成后，强制重新渲染
+      setTimeout(() => {
+        setChatHistory(prev => [...prev]);
+      }, 50);
     }
   };
 
@@ -164,6 +239,17 @@ const AIBookChatPage = () => {
               <div className="mb-4 flex justify-start">
                 <div className="relative p-4 rounded-xl border border-gray-200 shadow-sm max-w-[80%] bg-[#faf6f2] text-gray-700 font-sans text-[15px] leading-relaxed">
                   <LoadingIcon />
+                </div>
+              </div>
+            )}
+            {/* 显示加载状态或MCP状态 */}
+            {(isLoading || mcpStatus) && (
+              <div className="border rounded-lg p-3 bg-gray-50 animate-pulse">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-[#d97b53] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-600">
+                    {mcpStatus || "AI 正在思考..."}
+                  </span>
                 </div>
               </div>
             )}

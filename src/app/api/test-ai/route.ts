@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     console.log('开始测试AI API...');
     
     const testMessage = {
-      model: 'deepseek-chat',
+      model: 'deepseek-reasoner',
       messages: [
         {
           role: 'user',

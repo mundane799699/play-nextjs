@@ -8,7 +8,7 @@ import {
 
 // Hardcode the API key temporarily for testing
 const API_KEY = 'sk-5541239aecd84baf8bb20c2432836dd6';
-const API_URL = 'https://api.deepseek.com/chat/completions';
+const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 export async function POST(req: NextRequest) {
   try {
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat', // 必需的model字段
+        model: 'deepseek-reasoner', // 必需的model字段
         ...body,
         messages: enhancedMessages,
         stream: true

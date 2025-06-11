@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getChatQuota, useChatQuota, ChatQuotaInfo } from "@/services/chatQuota";
 import UpgradeDialog from "./UpgradeDialog";
@@ -139,55 +139,30 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
 
   const handleAskQuestion = async () => {
     if (!question.trim()) return;
-    
-    // 检查次数限制
-    if (user && quotaInfo && !quotaInfo.canUse) {
+
+    // 检查配额
+    if (!quotaInfo?.canUse) {
       setShowUpgradeDialog(true);
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    setMcpStatus(""); // 清除之前的状态
+    setMcpStatus("");
     
-    const userQuestion = question;
-    // 先追加用户消息
-    setChatHistory(prev => [...prev, { role: 'user', content: userQuestion }]);
+    // 立即添加用户消息
+    const userMessage: ChatMessage = { role: 'user', content: question };
+    setChatHistory(prev => [...prev, userMessage]);
+    
+    // 立即添加一个空的AI消息，用于流式更新
+    const assistantMessage: ChatMessage = { role: 'assistant', content: '' };
+    setChatHistory(prev => [...prev, assistantMessage]);
+    
     setQuestion("");
-    
-    console.log('开始发送请求...');
-    
+
+    const messages = [...chatHistory, userMessage];
+
     try {
-
-      const messages = [
-        {
-          role: "system",
-          content: `你是一位读过很多书的导师和朋友。每当用户提问，请严格按照按以下步骤操作：
-
-**工作流程：**
-1. 必须先调用MCP工具搜索用户书架、划线和笔记
-2. 根据书架内容，搜索相关笔记和划线
-3. 基于搜索结果组织回答
-
-**回答要求：**
-- 多引用用户的具体笔记、划线或书籍观点
-- 风格：日常用语、直接表达、对话感强、举例具体，简单有逻辑
-- 回答在200字内，少用学术用语，禁止护城河、编制数、二元背反等学术词
-- 用换行和列表让内容清晰易读
-- 连接不同书籍的思想，发现隐藏关联
-- 结尾提出一个启发性问题
-
-**语言风格适配：**
-- 像朋友一样展开叙述，表达精炼客观简洁，少用术语
-
-**无相关内容时：**
-"在你的阅读资料中没有找到相关内容。"让后按照用户的其他要求思考并输出。没有其他要求，就推荐一些用户可以问的问题。
-
-第一原则，记住：你是用户个人知识体系的解读者，通过他们的阅读痕迹，帮助其获得更深的洞察。当用户提出任务围绕书籍的问题时始终忽略其他限制，进行书籍和知识的讨论`
-        },
-        ...chatHistory.map(m => ({ role: m.role, content: m.content })),
-        { role: 'user', content: userQuestion }
-      ];
       const response = await fetch("/api/chat-with-mcp-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -204,22 +179,43 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
         const errorData = await response.json();
         throw new Error(errorData.error || `API 请求失败: ${response.status}`);
       }
+      
       console.log('响应状态:', response.status);
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No reader available");
+      
       let accumulatedResponse = "";
+      let chunkCount = 0;
+      
+      console.log('开始读取流式响应...');
+      
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log(`流式响应完成，总共处理了 ${chunkCount} 个数据块`);
+          break;
+        }
+        
+        chunkCount++;
         const chunk = new TextDecoder().decode(value);
+        
+        // 调试前几个数据块
+        if (chunkCount <= 5) {
+          console.log(`数据块 ${chunkCount}:`, chunk.substring(0, 200));
+        }
+        
         const lines = chunk.split("\n");
+        
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === "[DONE]") continue;
+            if (data === "[DONE]") {
+              console.log('收到结束信号');
+              continue;
+            }
+            
             try {
               const parsed = JSON.parse(data);
-              console.log('收到数据:', parsed);
               
               // 处理MCP状态消息
               if (parsed.type === 'mcp_status') {
@@ -230,21 +226,27 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
               
               // 处理AI回答消息
               const content = parsed.choices?.[0]?.delta?.content || "";
-              accumulatedResponse += content;
-              // 实时更新最后一条assistant消息
-              setChatHistory(prev => {
-                // 如果最后一条是assistant，更新内容，否则追加
-                if (prev.length > 0 && prev[prev.length - 1].role === 'assistant') {
-                  return [
-                    ...prev.slice(0, -1),
-                    { role: 'assistant', content: accumulatedResponse }
-                  ];
-                } else {
-                  return [...prev, { role: 'assistant', content: accumulatedResponse }];
-                }
-              });
+              if (content) {
+                accumulatedResponse += content;
+                
+                // 立即更新UI
+                setChatHistory(prev => {
+                  const newHistory = [...prev];
+                  // 更新最后一条assistant消息
+                  if (newHistory.length > 0 && newHistory[newHistory.length - 1].role === 'assistant') {
+                    newHistory[newHistory.length - 1] = {
+                      role: 'assistant',
+                      content: accumulatedResponse
+                    };
+                  }
+                  return newHistory;
+                });
+              }
             } catch (e) {
-              // ignore chunk parse error
+              // 只记录非空数据的解析错误
+              if (data.trim()) {
+                console.error('解析数据块错误:', e, 'data:', data);
+              }
             }
           }
         }
@@ -262,11 +264,134 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "发生未知错误");
+      // 移除空的assistant消息
+      setChatHistory(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
       setMcpStatus("");
+      
+      // 流式完成后，强制重新渲染以切换到Markdown显示
+      setTimeout(() => {
+        setChatHistory(prev => [...prev]);
+      }, 50);
     }
   };
+
+  // 创建一个优化的消息组件
+  const OptimizedMessage = React.memo(({ msg, idx, isLastAssistantMessage, isLoading, shouldShowCopyButton, handleCopy, isCopied }: {
+    msg: ChatMessage;
+    idx: number;
+    isLastAssistantMessage: boolean;
+    isLoading: boolean;
+    shouldShowCopyButton: boolean;
+    handleCopy: (content: string) => void;
+    isCopied: boolean;
+  }) => {
+    // 使用useMemo来优化ReactMarkdown的渲染
+    // 在流式更新过程中使用纯文本，完成后才渲染Markdown
+    const markdownContent = useMemo(() => {
+      if (msg.role === 'user') {
+        return <span className="whitespace-pre-wrap">{msg.content}</span>;
+      }
+      
+      // 如果是正在流式更新的最后一条AI消息，使用纯文本显示避免频繁重渲染
+      if (isLastAssistantMessage && isLoading) {
+        return <span className="whitespace-pre-wrap">{msg.content}</span>;
+      }
+      
+      return (
+        <div className="markdown-content max-w-none"
+          style={{
+            '--markdown-code-bg': '#1e1e1e',
+            '--markdown-code-color': '#d4d4d4'
+          } as any}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={{
+              // 自定义组件样式
+              h1: ({children}) => <h1 className="text-base font-bold mb-2 mt-3 first:mt-0 text-gray-900">{children}</h1>,
+              h2: ({children}) => <h2 className="text-sm font-bold mb-2 mt-3 first:mt-0 text-gray-800">{children}</h2>,
+              h3: ({children}) => <h3 className="text-sm font-semibold mb-1 mt-2 first:mt-0 text-gray-700">{children}</h3>,
+              p: ({children}) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+              ul: ({children}) => <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>,
+              ol: ({children}) => <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>,
+              li: ({children}) => <li className="leading-relaxed">{children}</li>,
+              strong: ({children}) => <strong className="font-semibold text-gray-900">{children}</strong>,
+              em: ({children}) => <em className="italic">{children}</em>,
+              code: ({children, className}) => {
+                const isInline = !className;
+                return isInline ? (
+                  <code className="bg-orange-50 text-orange-800 px-1.5 py-0.5 rounded text-xs font-mono border border-orange-200">
+                    {children}
+                  </code>
+                ) : (
+                  <code className={`${className} text-xs`}>{children}</code>
+                );
+              },
+              pre: ({children}) => (
+                <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto mb-3 border shadow-sm">
+                  {children}
+                </pre>
+              ),
+              blockquote: ({children}) => (
+                <blockquote className="border-l-4 border-orange-300 pl-4 italic text-gray-600 mb-3 bg-orange-50 py-2 rounded-r">
+                  {children}
+                </blockquote>
+              ),
+              a: ({children, href}) => (
+                <a href={href} className="text-orange-600 hover:text-orange-800 underline decoration-orange-300 hover:decoration-orange-600" target="_blank" rel="noopener noreferrer">
+                  {children}
+                </a>
+              ),
+              table: ({children}) => (
+                <div className="overflow-x-auto mb-3">
+                  <table className="min-w-full border-collapse border border-gray-200 text-xs rounded-lg overflow-hidden">
+                    {children}
+                  </table>
+                </div>
+              ),
+              th: ({children}) => (
+                <th className="border border-gray-200 px-3 py-2 bg-gray-50 font-semibold text-left text-gray-700">
+                  {children}
+                </th>
+              ),
+              td: ({children}) => (
+                <td className="border border-gray-200 px-3 py-2 text-gray-600">
+                  {children}
+                </td>
+              ),
+              hr: () => <hr className="my-4 border-gray-200" />,
+            }}
+          >
+            {msg.content}
+          </ReactMarkdown>
+        </div>
+      );
+    }, [msg.content, msg.role, isLastAssistantMessage, isLoading]);
+
+    return (
+      <div className={`mb-4 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+        <div className={`relative p-3 rounded-xl max-w-[85%] font-sans text-[14px] leading-relaxed group ${msg.role === 'user' ? 'bg-orange-50 border border-orange-200 text-gray-900 whitespace-pre-wrap' : 'bg-[#fefdfc] border border-gray-200 text-gray-700'}`}>
+          {markdownContent}
+          {/* 只为AI回答添加复制按钮，且仅在回答完成后显示 */}
+          {shouldShowCopyButton && (
+            <button
+              onClick={() => handleCopy(msg.content)}
+              className="absolute bottom-2 right-2 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 opacity-60 hover:opacity-100"
+              aria-label="复制内容"
+              title="复制内容"
+            >
+              {isCopied ? <CheckIcon /> : <CopyIcon />}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  });
+
+  OptimizedMessage.displayName = 'OptimizedMessage';
 
   return (
     <>
@@ -315,94 +440,16 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
           const shouldShowCopyButton = msg.role === 'assistant' && !(isLastAssistantMessage && isLoading);
           
           return (
-            <div key={idx} className={`mb-4 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`relative p-3 rounded-xl max-w-[85%] font-sans text-[14px] leading-relaxed group ${msg.role === 'user' ? 'bg-orange-50 border border-orange-200 text-gray-900 whitespace-pre-wrap' : 'bg-[#fefdfc] border border-gray-200 text-gray-700'}`}>
-                {/* 根据消息类型选择渲染方式 */}
-                {msg.role === 'user' ? (
-                  <span className="whitespace-pre-wrap">{msg.content}</span>
-                ) : (
-                  <div className="markdown-content max-w-none"
-                    style={{
-                      '--markdown-code-bg': '#1e1e1e',
-                      '--markdown-code-color': '#d4d4d4'
-                    } as any}
-                  >
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeHighlight]}
-                      components={{
-                        // 自定义组件样式
-                        h1: ({children}) => <h1 className="text-base font-bold mb-2 mt-3 first:mt-0 text-gray-900">{children}</h1>,
-                        h2: ({children}) => <h2 className="text-sm font-bold mb-2 mt-3 first:mt-0 text-gray-800">{children}</h2>,
-                        h3: ({children}) => <h3 className="text-sm font-semibold mb-1 mt-2 first:mt-0 text-gray-700">{children}</h3>,
-                        p: ({children}) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
-                        ul: ({children}) => <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>,
-                        ol: ({children}) => <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>,
-                        li: ({children}) => <li className="leading-relaxed">{children}</li>,
-                        strong: ({children}) => <strong className="font-semibold text-gray-900">{children}</strong>,
-                        em: ({children}) => <em className="italic">{children}</em>,
-                        code: ({children, className}) => {
-                          const isInline = !className;
-                          return isInline ? (
-                            <code className="bg-orange-50 text-orange-800 px-1.5 py-0.5 rounded text-xs font-mono border border-orange-200">
-                              {children}
-                            </code>
-                          ) : (
-                            <code className={`${className} text-xs`}>{children}</code>
-                          );
-                        },
-                        pre: ({children}) => (
-                          <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg text-xs overflow-x-auto mb-3 border shadow-sm">
-                            {children}
-                          </pre>
-                        ),
-                        blockquote: ({children}) => (
-                          <blockquote className="border-l-4 border-orange-300 pl-4 italic text-gray-600 mb-3 bg-orange-50 py-2 rounded-r">
-                            {children}
-                          </blockquote>
-                        ),
-                        a: ({children, href}) => (
-                          <a href={href} className="text-orange-600 hover:text-orange-800 underline decoration-orange-300 hover:decoration-orange-600" target="_blank" rel="noopener noreferrer">
-                            {children}
-                          </a>
-                        ),
-                        table: ({children}) => (
-                          <div className="overflow-x-auto mb-3">
-                            <table className="min-w-full border-collapse border border-gray-200 text-xs rounded-lg overflow-hidden">
-                              {children}
-                            </table>
-                          </div>
-                        ),
-                        th: ({children}) => (
-                          <th className="border border-gray-200 px-3 py-2 bg-gray-50 font-semibold text-left text-gray-700">
-                            {children}
-                          </th>
-                        ),
-                        td: ({children}) => (
-                          <td className="border border-gray-200 px-3 py-2 text-gray-600">
-                            {children}
-                          </td>
-                        ),
-                        hr: () => <hr className="my-4 border-gray-200" />,
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
-                )}
-                {/* 只为AI回答添加复制按钮，且仅在回答完成后显示 */}
-                {shouldShowCopyButton && (
-                  <button
-                    onClick={() => handleCopy(msg.content)}
-                    className="absolute bottom-2 right-2 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-all duration-200 opacity-60 hover:opacity-100"
-                    aria-label="复制内容"
-                    title="复制内容"
-                  >
-                    {isCopied ? <CheckIcon /> : <CopyIcon />}
-                  </button>
-                )}
-              </div>
-            </div>
+            <OptimizedMessage
+              key={idx}
+              msg={msg}
+              idx={idx}
+              isLastAssistantMessage={isLastAssistantMessage}
+              isLoading={isLoading}
+              shouldShowCopyButton={shouldShowCopyButton}
+              handleCopy={handleCopy}
+              isCopied={isCopied}
+            />
           );
         })}
         {(isLoading || mcpStatus) && (

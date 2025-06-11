@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>端午节祝福卡片</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8ff 100%);
+            font-family: 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-width: 1000px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d5016;
+            margin-bottom: 20px;
+        }
+        .download-btn {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            background: #2d5016;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #1a3009;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <h1>端午节祝福卡片</h1>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="auto">
+            <defs>
+                <!-- 外框渐变-使用端午节的绿色系 -->
+                <linearGradient id="borderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#2d5016;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#4a7c59;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#2d5016;stop-opacity:1" />
+                </linearGradient>
+                <!-- 卡片背景渐变 -->
+                <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#f0f8f0;stop-opacity:1" />
+                </linearGradient>
+                <!-- 装饰性粽子图案 -->
+                <pattern id="decorPattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <polygon points="25,15 35,25 25,35 15,25" fill="none" stroke="#8FBC8F" stroke-width="0.5"/>
+                    <circle cx="25" cy="25" r="3" fill="#8FBC8F" opacity="0.3"/>
+                </pattern>
+                <!-- 卡片阴影效果 -->
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="10" dy="10" stdDeviation="15" flood-color="#333333" flood-opacity="0.3"/>
+                </filter>
+            </defs>
+            
+            <!-- 背景-淡绿背景 -->
+            <rect width="100%" height="100%" fill="#f8fff8"/>
+            
+            <!-- 装饰性边框 -->
+            <rect x="50" y="25" width="900" height="550" rx="20" ry="20" 
+                fill="url(#borderGradient)" 
+                filter="url(#shadow)"/>
+            
+            <!-- 装饰性图案 -->
+            <rect x="50" y="25" width="900" height="550" rx="20" ry="20" 
+                fill="url(#decorPattern)" 
+                fill-opacity="0.2"/>
+            
+            <!-- 卡片主体 -->
+            <rect x="100" y="50" width="800" height="500" rx="10" ry="10" 
+                fill="url(#cardGradient)" 
+                stroke="#2d5016" 
+                stroke-width="1"/>
+            
+            <!-- 分隔线 -->
+            <line x1="550" y1="150" x2="550" y2="450" 
+                stroke="#DDDDDD" 
+                stroke-width="1"
+                stroke-dasharray="5,5"/>
+            
+            <!-- 左边贺卡内容区 -->
+            <text x="150" y="120" font-size="28" fill="#2d5016" font-family="Microsoft YaHei, sans-serif">致: 亲爱的朋友</text>
+            
+            <!-- 祝福语内容 - 屈原的祝福 -->
+            <g font-family="Microsoft YaHei, sans-serif">
+                <text x="150" y="180" font-size="20" fill="#666">五月五日天晴明，杨花绕江啼晓莺。</text>
+                <text x="150" y="215" font-size="20" fill="#666">今逢端午佳节至，愿君如我心中情。</text>
+                <text x="150" y="250" font-size="20" fill="#666"></text>
+                <text x="150" y="285" font-size="20" fill="#666">粽叶飘香思故人，艾草驱邪保安宁。</text>
+                <text x="150" y="320" font-size="20" fill="#666">龙舟竞渡庆丰年，雄黄酒香满堂亲。</text>
+                <text x="150" y="355" font-size="20" fill="#666"></text>
+                <text x="150" y="390" font-size="20" fill="#666">愿君身体健如松，家庭和睦乐融融。</text>
+                <text x="150" y="425" font-size="20" fill="#666">端午安康!</text>
+            </g>
+            
+            <!-- 签名移至右下角 -->
+            <g font-family="Microsoft YaHei, sans-serif">
+                <text x="650" y="400" font-size="20" fill="#2d5016">屈原</text>
+                <text x="650" y="430" font-size="16" fill="#666">楚国诗人</text>
+                <text x="650" y="460" font-size="16" fill="#666">"路漫漫其修远兮"</text>
+            </g>
+            
+            <!-- 右边印章区 -->
+            <g transform="translate(700,100)">
+                <!-- 印章底色 -->
+                <circle cx="60" cy="75" r="60" 
+                    fill="#2d5016" 
+                    stroke="#DAA520"
+                    stroke-width="2"/>
+                
+                <!-- 粽子装饰 -->
+                <polygon points="60,45 75,60 60,75 45,60" 
+                    fill="#DAA520"/>
+                
+                <!-- 端午节文字 -->
+                <text x="60" y="85" 
+                    font-size="18" 
+                    text-anchor="middle" 
+                    fill="#FFFFFF" 
+                    font-weight="bold">端午</text>
+                <text x="60" y="105" 
+                    font-size="16" 
+                    text-anchor="middle" 
+                    fill="#FFFFFF" 
+                    font-weight="bold">安康</text>
+                
+                <!-- 印章轮廓 -->
+                <path d="M30,75 A30,30 0 1,1 90,75 A30,30 0 1,1 30,75" 
+                    fill="none" 
+                    stroke="#DAA520" 
+                    stroke-width="1"/>
+            </g>
+            
+            <!-- 装饰性元素 -->
+            <!-- 艾草叶 -->
+            <path d="M150,50 Q165,40 180,50 Q175,35 170,25 Q165,35 160,25" 
+                stroke="#228B22" 
+                stroke-width="2" 
+                fill="none"/>
+            
+            <!-- 龙舟桨 -->
+            <ellipse cx="850" cy="500" rx="12" ry="6" 
+                fill="#8B4513" 
+                transform="rotate(45 850 500)"/>
+            <line x1="845" y1="505" x2="830" y2="520" 
+                stroke="#8B4513" 
+                stroke-width="3"/>
+            
+            <!-- 粽子装饰 -->
+            <polygon points="120,480 135,495 120,510 105,495" 
+                fill="#8FBC8F" 
+                stroke="#2d5016" 
+                stroke-width="1"/>
+            
+            <!-- 波浪纹装饰 -->
+            <path d="M120,520 Q130,515 140,520 Q150,525 160,520" 
+                stroke="#4682B4" 
+                stroke-width="2" 
+                fill="none"/>
+        </svg>
+        
+        <div class="download-btn">
+            <button onclick="downloadSVG()">下载SVG卡片</button>
+        </div>
+    </div>
+
+    <script>
+        function downloadSVG() {
+            const svg = document.querySelector('svg');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+            const svgUrl = URL.createObjectURL(svgBlob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = svgUrl;
+            downloadLink.download = '端午节祝福卡片.svg';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(svgUrl);
+        }
+    </script>
+</body>
+</html> 

@@ -61,10 +61,7 @@ export async function POST(req: NextRequest) {
                     "get_book_notes": "获取笔记"
                   };
                   const displayName = toolDisplayNames[toolCall.name] || toolCall.name;
-                  sendMCPStatus(`正在调用 ${toolCall.name} (${displayName})`);
-                  
-                  // 让用户看清工具调用状态 - 稍作延迟
-                  await new Promise(resolve => setTimeout(resolve, 800));
+                  sendMCPStatus(`正在调用 ${displayName}`);
                   
                   // 只有有token时才真正执行工具
                   if (token) {
@@ -73,27 +70,17 @@ export async function POST(req: NextRequest) {
                     mcpResults.push(result);
                     console.log(`工具 ${toolCall.name} 执行成功，结果数量:`, result.metadata?.count);
                   } else {
-                    console.log(`模拟工具调用: ${toolCall.name} (无token)`);
-                    // 模拟执行时间
-                    await new Promise(resolve => setTimeout(resolve, 1200));
+                    console.log(`跳过工具调用: ${toolCall.name} (无token)`);
                   }
-                  
-                  // 工具执行完成后的短暂延迟
-                  await new Promise(resolve => setTimeout(resolve, 300));
                 } catch (error) {
                   console.error(`工具 ${toolCall.name} 执行失败:`, error);
                   // 继续执行其他工具，不中断流程
                 }
               }
               
-              // 发送整理状态
-              sendMCPStatus('正在整理回答...');
-              
-              // 让用户看清整理状态
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              
               // 如果有MCP结果，增强用户消息
               if (mcpResults.length > 0) {
+                sendMCPStatus('正在整理回答...');
                 const contextInfo = formatMCPResultsForAI(mcpResults);
                 console.log('MCP查询成功，增强上下文长度:', contextInfo.length);
                 
@@ -133,7 +120,7 @@ export async function POST(req: NextRequest) {
               'Authorization': `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
-              model: 'deepseek-chat', // 必需的model字段
+              model: 'deepseek-reasoner', // 必需的model字段
               ...body,
               messages: enhancedMessages,
               stream: true
