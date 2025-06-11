@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试Chat API</title>
+</head>
+<body>
+    <h1>测试Chat API</h1>
+    <button onclick="testChat()">测试原始Chat API</button>
+    <button onclick="testMCPChat()">测试MCP Chat API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testChat() {
+            const result = document.getElementById('result');
+            result.innerHTML = '测试中...';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: '你好，请回复"原始API测试成功"'
+                            }
+                        ],
+                        useMCP: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    result.innerHTML = `错误: ${response.status} ${response.statusText}<br><pre>${errorText}</pre>`;
+                    return;
+                }
+                
+                const reader = response.body?.getReader();
+                if (!reader) {
+                    result.innerHTML = '无法读取响应流';
+                    return;
+                }
+                
+                result.innerHTML = '响应: ';
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    result.innerHTML += chunk;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `测试失败: ${error.message}`;
+            }
+        }
+        
+        async function testMCPChat() {
+            const result = document.getElementById('result');
+            result.innerHTML = '测试MCP中...';
+            
+            try {
+                const response = await fetch('/api/chat-with-mcp-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: '你好，请回复"MCP API测试成功"'
+                            }
+                        ],
+                        useMCP: false // 禁用MCP，只测试AI部分
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    result.innerHTML = `错误: ${response.status} ${response.statusText}<br><pre>${errorText}</pre>`;
+                    return;
+                }
+                
+                const reader = response.body?.getReader();
+                if (!reader) {
+                    result.innerHTML = '无法读取响应流';
+                    return;
+                }
+                
+                result.innerHTML = 'MCP响应: ';
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    result.innerHTML += chunk;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `MCP测试失败: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 
