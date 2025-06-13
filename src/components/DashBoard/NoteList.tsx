@@ -13,10 +13,12 @@ import Link from "next/link";
 import RandomReviewModal from "../Modal/RandomReviewModal";
 import SettingsDialog from "./SettingsDialog";
 import ExportModal from "../Modal/ExportModal";
+import { useDashboard } from "@/context/DashboardContext";
 
 type SortOption = "time" | "bookName" | "timeAsc" | "random";
 
 const NoteList = ({ initialBookId }: { initialBookId: string }) => {
+  const { onAIChatToggle } = useDashboard();
 
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
@@ -141,9 +143,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
   return (
 
-    <div className="py-4 px-2 sm:px-4">
+    <div className="mx-auto max-w-6xl px-4">
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="mt-6 flex items-center justify-between gap-2">
 
         <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
           <span className="text-gray-600 text-xs sm:text-base whitespace-nowrap">
@@ -239,7 +241,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
             </button>
             <button
             onClick={() => setIsRandomReviewOpen(true)}
-            className="flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
+            className="hidden flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
             title="随机回顾"
           >
             <Shuffle className="h-4 w-4" />
@@ -263,6 +265,16 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
             </button>
             )}
           </div>
+          <button
+            onClick={onAIChatToggle}
+            className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 flex-shrink-0"
+            title="AI问书"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span className="hidden sm:inline">AI问书</span>
+          </button>
         </div>
 
       </div>

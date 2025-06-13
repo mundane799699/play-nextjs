@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Search, BarChart2 } from "lucide-react";
 import StatsDialog from "./StatsDialog";
+import { useDashboard } from "@/context/DashboardContext";
 
 const BookList = () => {
   const router = useRouter();
@@ -12,6 +13,7 @@ const BookList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [showStats, setShowStats] = useState(false);
+  const { onAIChatToggle } = useDashboard();
 
   useEffect(() => {
     getBooks();
@@ -91,17 +93,29 @@ const BookList = () => {
           </button>
         </div>
 
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-gray-400" />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="w-32 sm:w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              placeholder="输入书籍名称"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
           </div>
-          <input
-            type="text"
-            className="w-32 sm:w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder="输入书籍名称"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
+          <button
+            onClick={onAIChatToggle}
+            className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+            title="AI问书"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span className="hidden sm:inline">AI问书</span>
+          </button>
         </div>
       </div>
 
