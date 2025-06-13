@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, BarChart2 } from "lucide-react";
+import { Search, BarChart2, SortDesc, ChevronDown } from "lucide-react";
 import StatsDialog from "./StatsDialog";
 import { useDashboard } from "@/context/DashboardContext";
+
+type SortOption = "default" | "bookName" | "updateTime";
 
 const BookList = () => {
   const router = useRouter();
@@ -13,6 +15,8 @@ const BookList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [showStats, setShowStats] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("default");
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const { onAIChatToggle } = useDashboard();
 
   useEffect(() => {
@@ -20,18 +24,51 @@ const BookList = () => {
     getNotes();
   }, []);
 
+  // 点击外部关闭排序下拉菜单
   useEffect(() => {
-    // 当books或searchQuery变化时，过滤书籍
-    if (!searchQuery.trim()) {
-      setFilteredBooks(books);
-    } else {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (sortDropdownOpen && !target.closest('.sort-dropdown')) {
+        setSortDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [sortDropdownOpen]);
+
+  useEffect(() => {
+    // 当books、searchQuery或sortOption变化时，过滤和排序书籍
+    let filtered = [...books];
+    
+    // 先应用搜索过滤
+    if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      const filtered = books.filter((book: any) => 
+      filtered = filtered.filter((book: any) => 
         book.bookName.toLowerCase().includes(query)
       );
-      setFilteredBooks(filtered);
     }
-  }, [books, searchQuery]);
+    
+    // 应用排序
+    if (sortOption === "bookName") {
+      filtered.sort((a: any, b: any) => {
+        const bookNameA = a.bookName?.toLowerCase() || '';
+        const bookNameB = b.bookName?.toLowerCase() || '';
+        return bookNameB.localeCompare(bookNameA); // 降序
+      });
+    } else if (sortOption === "updateTime") {
+      filtered.sort((a: any, b: any) => {
+        const timeA = a.updateTime || a.updatedAt || 0;
+        const timeB = b.updateTime || b.updatedAt || 0;
+        return timeB - timeA; // 降序，最新的在前
+      });
+    }
+    // default 保持原始顺序
+    
+    setFilteredBooks(filtered);
+  }, [books, searchQuery, sortOption]);
 
   const getBooks = async () => {
     const response = await fetch("/api/books", {
@@ -74,6 +111,19 @@ const BookList = () => {
     setSearchQuery(e.target.value);
   };
 
+  const getSortLabel = () => {
+    switch (sortOption) {
+      case "default":
+        return "默认";
+      case "bookName":
+        return "按书名降序";
+      case "updateTime":
+        return "按同步时间降序";
+      default:
+        return "默认";
+    }
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4">
       {/* 顶部区域：书籍数量和搜索框 */}
@@ -91,6 +141,57 @@ const BookList = () => {
             <span className="hidden sm:inline">统计</span>
             <span className="absolute -top-1.5 -right-1.5 text-[9px] text-primary">beta</span>
           </button>
+          
+          <div className="relative sort-dropdown">
+            <button
+              onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+              title={`排序：${getSortLabel()}`}
+            >
+              <SortDesc className="h-4 w-4" />
+              <span className="ml-1 hidden lg:inline">排序：{getSortLabel()}</span>
+              <span className="ml-1 hidden sm:inline lg:hidden">排序</span>
+              <ChevronDown className="ml-1 h-3.5 w-3.5" />
+            </button>
+            
+            {sortDropdownOpen && (
+              <div className="absolute left-0 top-full mt-1 w-36 rounded-md border border-gray-200 bg-white py-1 shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    setSortOption("default");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`w-full text-left rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "default" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  默认
+                </button>
+                <button
+                  onClick={() => {
+                    setSortOption("bookName");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`w-full text-left rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "bookName" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  按书名降序
+                </button>
+                <button
+                  onClick={() => {
+                    setSortOption("updateTime");
+                    setSortDropdownOpen(false);
+                  }}
+                  className={`w-full text-left rounded px-3 py-1 text-xs transition-colors ${
+                    sortOption === "updateTime" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  按同步时间降序
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
