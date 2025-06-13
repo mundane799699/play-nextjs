@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Search, BarChart2, SortDesc, ChevronDown } from "lucide-react";
 import StatsDialog from "./StatsDialog";
 import { useDashboard } from "@/context/DashboardContext";
@@ -17,6 +17,10 @@ const BookList = () => {
   const [showStats, setShowStats] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("default");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [isDesktopSearchFocused, setIsDesktopSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const desktopSearchInputRef = useRef<HTMLInputElement>(null);
   const { onAIChatToggle } = useDashboard();
 
   useEffect(() => {
@@ -111,6 +115,33 @@ const BookList = () => {
     setSearchQuery(e.target.value);
   };
 
+  const handleSearchButtonClick = () => {
+    setIsSearchExpanded(true);
+    // 使用 setTimeout 确保 DOM 更新后再聚焦
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+  };
+
+  const handleSearchBlur = () => {
+    // 如果搜索框为空，则收起搜索框
+    if (!searchQuery.trim()) {
+      setIsSearchExpanded(false);
+    }
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchExpanded(true);
+  };
+
+  const handleDesktopSearchFocus = () => {
+    setIsDesktopSearchFocused(true);
+  };
+
+  const handleDesktopSearchBlur = () => {
+    setIsDesktopSearchFocused(false);
+  };
+
   const getSortLabel = () => {
     switch (sortOption) {
       case "default":
@@ -127,14 +158,18 @@ const BookList = () => {
   return (
     <div className="mx-auto max-w-6xl px-4">
       {/* 顶部区域：书籍数量和搜索框 */}
-      <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-600 text-sm sm:text-base">
+      <div className="mt-6 flex items-center justify-between gap-2">
+        
+        {/* 左侧按钮组 - 桌面端搜索聚焦时隐藏 */}
+        <div className={`flex items-center gap-2 transition-all duration-300 ${
+          isDesktopSearchFocused ? 'hidden sm:hidden' : 'flex'
+        }`}>
+          <span className="text-gray-600 text-sm sm:text-base whitespace-nowrap">
             共<span className="font-medium">{filteredBooks.length}本</span>
           </span>
           <button
             onClick={() => setShowStats(true)}
-            className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 relative"
+            className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 relative flex-shrink-0"
             title="查看统计分析"
           >
             <BarChart2 className="h-3.5 w-3.5" />
@@ -145,7 +180,7 @@ const BookList = () => {
           <div className="relative sort-dropdown">
             <button
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1 flex-shrink-0"
               title={`排序：${getSortLabel()}`}
             >
               <SortDesc className="h-4 w-4" />
@@ -194,19 +229,58 @@ const BookList = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        {/* 移动端搜索展开时的全宽搜索框 */}
+        {isSearchExpanded && (
+          <div className="relative sm:hidden w-full">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
+              ref={searchInputRef}
               type="text"
-              className="w-32 sm:w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="输入书籍名称"
               value={searchQuery}
               onChange={handleSearchChange}
+              onBlur={handleSearchBlur}
+              onFocus={handleSearchFocus}
             />
           </div>
+        )}
+        
+        {/* 右侧按钮组 */}
+        <div className={`flex items-center gap-2 transition-all duration-300 ${isSearchExpanded ? 'hidden sm:flex' : 'flex'}`}>
+          {/* 移动端搜索按钮 */}
+          <div className="relative sm:hidden">
+            <button
+              onClick={handleSearchButtonClick}
+              className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+              title="搜索书籍"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span>搜索</span>
+            </button>
+          </div>
+          
+          {/* 桌面端搜索框 */}
+          <div className={`relative hidden sm:block transition-all duration-300 ${
+            isDesktopSearchFocused ? 'w-full max-w-lg' : 'w-48 lg:w-64'
+          }`}>
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              ref={desktopSearchInputRef}
+              type="text"
+              className="w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all duration-300"
+              placeholder="输入书籍名称"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={handleDesktopSearchFocus}
+              onBlur={handleDesktopSearchBlur}
+            />
+          </div>
+          
           <button
             onClick={onAIChatToggle}
             className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
@@ -220,7 +294,8 @@ const BookList = () => {
         </div>
       </div>
 
-      <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* 书籍列表 */}
+      <ul className="mt-8 grid gap-6">
         {filteredBooks.map((item: any) => (
         <li
           key={item.bookId}
@@ -269,8 +344,8 @@ const BookList = () => {
     </ul>
       
       {/* 统计分析弹窗 */}
-      <StatsDialog 
-        isOpen={showStats} 
+      <StatsDialog
+        isOpen={showStats}
         onClose={() => setShowStats(false)}
         books={books}
         notes={notes}

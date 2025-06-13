@@ -151,7 +151,7 @@ const ShareDialog = ({
                     {/* 标记文本 */}
                     {note.markText && (
                       <div 
-                        className="text-base leading-relaxed font-medium break-words"
+                        className="text-sm sm:text-base leading-relaxed font-medium break-words"
                         style={{ color: themeStyles.contentColor }}
                       >
                         {note.markText.length > 200 ? note.markText.substring(0, 200) + '...' : note.markText}
@@ -161,7 +161,7 @@ const ShareDialog = ({
                     {/* 笔记内容 */}
                     {note.noteContent && (
                       <div 
-                        className="text-sm leading-relaxed opacity-80 break-words"
+                        className="text-xs sm:text-sm leading-relaxed opacity-80 break-words"
                         style={{ color: themeStyles.contentColor }}
                       >
                         {note.noteContent.length > 200 ? note.noteContent.substring(0, 200) + '...' : note.noteContent}
@@ -230,7 +230,7 @@ const ShareDialog = ({
                       {/* 标记文本 */}
                       {note.markText && (
                         <div 
-                          className="text-base leading-relaxed font-medium break-words"
+                          className="text-sm sm:text-base leading-relaxed font-medium break-words"
                           style={{ color: themeStyles.contentColor }}
                         >
                           {note.markText.length > 200 ? note.markText.substring(0, 200) + '...' : note.markText}
@@ -240,7 +240,7 @@ const ShareDialog = ({
                       {/* 笔记内容 */}
                       {note.noteContent && (
                         <div 
-                          className="text-sm leading-relaxed opacity-80 break-words"
+                          className="text-xs sm:text-sm leading-relaxed opacity-80 break-words"
                           style={{ color: themeStyles.contentColor }}
                         >
                           {note.noteContent.length > 200 ? note.noteContent.substring(0, 200) + '...' : note.noteContent}
@@ -290,7 +290,7 @@ const ShareDialog = ({
                     {/* 标记文本 */}
                     {note.markText && (
                       <div 
-                        className="text-base leading-relaxed font-medium break-words"
+                        className="text-sm sm:text-base leading-relaxed font-medium break-words"
                         style={{ color: themeStyles.contentColor }}
                       >
                         {note.markText.length > 200 ? note.markText.substring(0, 200) + '...' : note.markText}
@@ -300,7 +300,7 @@ const ShareDialog = ({
                     {/* 笔记内容 */}
                     {note.noteContent && (
                       <div 
-                        className="text-sm leading-relaxed opacity-90 break-words"
+                        className="text-xs sm:text-sm leading-relaxed opacity-90 break-words"
                         style={{ color: themeStyles.contentColor }}
                       >
                         {note.noteContent.length > 200 ? note.noteContent.substring(0, 200) + '...' : note.noteContent}

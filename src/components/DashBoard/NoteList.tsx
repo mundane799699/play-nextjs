@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import dayjs from "dayjs";
 
 import { useDebounce } from "use-debounce";
@@ -40,8 +40,10 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const [isRandomReviewOpen, setIsRandomReviewOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
-
-
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [isDesktopSearchFocused, setIsDesktopSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const desktopSearchInputRef = useRef<HTMLInputElement>(null);
 
   const getNotes = useCallback(async (bookId: string) => {
     const response = await fetch(`/api/notes?bookId=${bookId}`, {
@@ -63,8 +65,6 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     }
 
   }, []);
-
-
 
   useEffect(() => {
     getNotes(bookId);
@@ -98,8 +98,6 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     
     setFilteredNotes(sorted);
   }, [debouncedSearchTerm, notes, sortOption]);
-
-
 
   const handleExport = async (format: "excel" | "markdown") => {
     if (format === "excel") {
@@ -139,15 +137,41 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     }
   };
 
+  const handleSearchButtonClick = () => {
+    setIsSearchExpanded(true);
+    // 使用 setTimeout 确保 DOM 更新后再聚焦
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+  };
 
+  const handleSearchBlur = () => {
+    // 如果搜索框为空，则收起搜索框
+    if (!searchTerm.trim()) {
+      setIsSearchExpanded(false);
+    }
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchExpanded(true);
+  };
+
+  const handleDesktopSearchFocus = () => {
+    setIsDesktopSearchFocused(true);
+  };
+
+  const handleDesktopSearchBlur = () => {
+    setIsDesktopSearchFocused(false);
+  };
 
   return (
-
     <div className="mx-auto max-w-6xl px-4">
-
       <div className="mt-6 flex items-center justify-between gap-2">
-
-        <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
+        
+        {/* 左侧按钮组 - 桌面端搜索聚焦时隐藏 */}
+        <div className={`flex items-center space-x-1 sm:space-x-4 flex-shrink-0 transition-all duration-300 ${
+          isDesktopSearchFocused ? 'hidden sm:hidden' : 'flex'
+        }`}>
           <span className="text-gray-600 text-xs sm:text-base whitespace-nowrap">
             {bookName ? `${bookName}：` : '共'}
             <span className="font-medium">{filteredNotes.length}/{totalNotes}条</span>
@@ -155,7 +179,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+            className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1 flex-shrink-0"
             title="导出"
           >
             <Download className="h-4 w-4" />
@@ -165,7 +189,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           <div className="relative">
             <button
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1 flex-shrink-0"
               title={`排序：${getSortLabel()}`}
             >
               <SortDesc className="h-4 w-4" />
@@ -225,34 +249,17 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           </div>
         </div>
 
-
-
-        <div className="flex items-center space-x-1 flex-shrink min-w-0">
-            <button
-            onClick={() => setIsSettingsDialogOpen(true)}
-            className="group relative flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
-            title="邮箱回顾"
-            >
-            <Mail className="h-4 w-4" />
-            <span className="relative ml-1 hidden lg:inline whitespace-nowrap">
-              邮箱回顾
-              <span className="ml-0.5 inline-block translate-y-[-3px] rounded-sm bg-primary/80 px-0.5 text-[6px] font-normal uppercase leading-3 text-white opacity-80">pro</span>
-            </span>
-            </button>
-            <button
-            onClick={() => setIsRandomReviewOpen(true)}
-            className="hidden flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
-            title="随机回顾"
-          >
-            <Shuffle className="h-4 w-4" />
-            <span className="ml-1 hidden lg:inline whitespace-nowrap">随机回顾</span>
-          </button>
-          <div className="relative w-24 sm:w-32 md:w-48 lg:w-64 min-w-0">
+        {/* 移动端搜索展开时的全宽搜索框 */}
+        {isSearchExpanded && (
+          <div className="relative sm:hidden w-full">
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="搜索笔记"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onBlur={handleSearchBlur}
+              onFocus={handleSearchFocus}
               className="w-full rounded-md border border-gray-300 py-2 pl-8 pr-4 text-sm text-gray-700 focus:border-primary focus:outline-none"
             />
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -260,11 +267,72 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
               <button
                 onClick={() => setSearchTerm("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500"
-            >
+              >
                 <X className="h-3 w-3" />
-            </button>
+              </button>
             )}
           </div>
+        )}
+        
+        {/* 右侧按钮组 */}
+        <div className={`flex items-center space-x-1 flex-shrink min-w-0 transition-all duration-300 ${isSearchExpanded ? 'hidden sm:flex' : 'flex'}`}>
+          <button
+            onClick={() => setIsSettingsDialogOpen(true)}
+            className="group relative flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
+            title="邮箱回顾"
+          >
+            <Mail className="h-4 w-4" />
+            <span className="relative ml-1 hidden lg:inline whitespace-nowrap">
+              邮箱回顾
+              <span className="ml-0.5 inline-block translate-y-[-3px] rounded-sm bg-primary/80 px-0.5 text-[6px] font-normal uppercase leading-3 text-white opacity-80">pro</span>
+            </span>
+          </button>
+          <button
+            onClick={() => setIsRandomReviewOpen(true)}
+            className="hidden flex items-center p-1 sm:px-2 text-gray-600 transition duration-300 hover:text-gray-800 flex-shrink-0"
+            title="随机回顾"
+          >
+            <Shuffle className="h-4 w-4" />
+            <span className="ml-1 hidden lg:inline whitespace-nowrap">随机回顾</span>
+          </button>
+          
+          {/* 移动端搜索按钮 */}
+          <div className="relative sm:hidden">
+            <button
+              onClick={handleSearchButtonClick}
+              className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+              title="搜索笔记"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span>搜索</span>
+            </button>
+          </div>
+          
+          {/* 桌面端搜索框 */}
+          <div className={`relative min-w-0 hidden sm:block transition-all duration-300 ${
+            isDesktopSearchFocused ? 'w-full max-w-lg' : 'w-24 sm:w-32 md:w-48 lg:w-64'
+          }`}>
+            <input
+              ref={desktopSearchInputRef}
+              type="text"
+              placeholder="搜索笔记"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={handleDesktopSearchFocus}
+              onBlur={handleDesktopSearchBlur}
+              className="w-full rounded-md border border-gray-300 py-2 pl-8 pr-4 text-sm text-gray-700 focus:border-primary focus:outline-none transition-all duration-300"
+            />
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+          
           <button
             onClick={onAIChatToggle}
             className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 flex-shrink-0"
@@ -276,7 +344,6 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
             <span className="hidden sm:inline">AI问书</span>
           </button>
         </div>
-
       </div>
 
       <ul className="mt-4 space-y-6">
@@ -290,14 +357,14 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
               {/* 标记的文本 */}
               <div className="relative pl-4 mb-6">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
-                <blockquote className="text-lg font-medium text-gray-700">
+                <blockquote className="text-sm sm:text-lg font-medium text-gray-700">
                   {note.markText}
                 </blockquote>
               </div>
 
               {/* 笔记内容 */}
               <div>
-                <div className="text-base leading-relaxed text-gray-800">
+                <div className="text-sm sm:text-base leading-relaxed text-gray-800">
                   {note.noteContent}
                 </div>
               </div>
@@ -382,11 +449,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
         onExport={handleExport}
       />
     </div>
-
   );
-
 };
-
-
 
 export default NoteList;

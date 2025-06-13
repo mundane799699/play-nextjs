@@ -130,14 +130,14 @@ const ReviewPage = () => {
                 {currentNote.markText && (
                   <div className="relative pl-4">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full"></div>
-                    <blockquote className="text-lg font-medium text-gray-700">
+                    <blockquote className="text-sm sm:text-lg font-medium text-gray-700">
                       {currentNote.markText}
                     </blockquote>
                   </div>
                 )}
 
                 {/* 笔记内容 */}
-                <div className="text-base leading-relaxed text-gray-800">
+                <div className="text-sm sm:text-base leading-relaxed text-gray-800">
                   {currentNote.noteContent}
                 </div>
               </div>
