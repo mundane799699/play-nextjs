@@ -16,6 +16,18 @@ export async function notesService(
   });
 }
 
+export async function fetchNotes(
+  bookId: string,
+  bookName: string,
+): Promise<any> {
+  return await axios.get(`/wxread/notes/noteslist`, {
+    params: {
+      bookId,
+      bookName,
+    },
+  });
+}
+
 export async function exportNotesService(bookId: string) {
   try {
     const response = await axios({
@@ -86,4 +98,11 @@ export async function exportNotesMdService(bookId: string) {
 
 export async function getRandomReview(): Promise<any> {
   return await axios.get("/wxread/notes/getRandomReview");
+}
+
+export async function deleteNoteService(bookId: string, reviewId: string) {
+  return await axios.post("/wxread/notes/delete", {
+    bookId,
+    reviewId,
+  });
 }

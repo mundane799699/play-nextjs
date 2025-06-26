@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { Search, BarChart2, SortDesc, ChevronDown } from "lucide-react";
 import StatsDialog from "./StatsDialog";
 import { useDashboard } from "@/context/DashboardContext";
+import { getAllBooks } from "@/services/books";
 
 type SortOption = "default" | "bookName" | "updateTime";
 
@@ -19,45 +20,45 @@ const BookList = () => {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { onAIChatToggle } = useDashboard();
 
   useEffect(() => {
     getBooks();
-    getNotes();
   }, []);
 
   // 点击外部关闭排序下拉菜单
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (sortDropdownOpen && !target.closest('.sort-dropdown')) {
+      if (sortDropdownOpen && !target.closest(".sort-dropdown")) {
         setSortDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [sortDropdownOpen]);
 
   useEffect(() => {
     // 当books、searchQuery或sortOption变化时，过滤和排序书籍
     let filtered = [...books];
-    
+
     // 先应用搜索过滤
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((book: any) => 
-        book.bookName.toLowerCase().includes(query)
+      filtered = filtered.filter((book: any) =>
+        book.bookName.toLowerCase().includes(query),
       );
     }
-    
+
     // 应用排序
     if (sortOption === "bookName") {
       filtered.sort((a: any, b: any) => {
-        const bookNameA = a.bookName?.toLowerCase() || '';
-        const bookNameB = b.bookName?.toLowerCase() || '';
+        const bookNameA = a.bookName?.toLowerCase() || "";
+        const bookNameB = b.bookName?.toLowerCase() || "";
         return bookNameB.localeCompare(bookNameA); // 降序
       });
     } else if (sortOption === "updateTime") {
@@ -68,41 +69,19 @@ const BookList = () => {
       });
     }
     // default 保持原始顺序
-    
+
     setFilteredBooks(filtered);
   }, [books, searchQuery, sortOption]);
 
   const getBooks = async () => {
-    const response = await fetch("/api/books", {
-      method: "GET",
-    });
-    if (!response.ok) {
-      console.log(response.statusText);
-      return;
-    }
-    const { code, rows } = await response.json();
+    setIsLoading(true);
+    const res = (await getAllBooks()) as any;
+    const { code, rows, msg } = res;
     if (code === 200) {
       setBooks(rows);
       setFilteredBooks(rows);
     }
-  };
-
-  const getNotes = async () => {
-    try {
-      const response = await fetch("/api/notes", {
-        method: "GET",
-      });
-      if (!response.ok) {
-        console.log(response.statusText);
-        return;
-      }
-      const { code, data } = await response.json();
-      if (code === 200) {
-        setNotes(data || []);
-      }
-    } catch (error) {
-      console.error("获取笔记失败:", error);
-    }
+    setIsLoading(false);
   };
 
   const handleBookClick = (bookId: string) => {
@@ -150,40 +129,46 @@ const BookList = () => {
       {/* 顶部区域：书籍数量和搜索框 */}
       <div className="mt-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-gray-600 text-sm sm:text-base">
+          <span className="text-sm text-gray-600 sm:text-base">
             共<span className="font-medium">{filteredBooks.length}本</span>
           </span>
           <button
             onClick={() => setShowStats(true)}
-            className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 relative"
+            className="relative flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 sm:px-3"
             title="查看统计分析"
           >
             <BarChart2 className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">统计</span>
-            <span className="absolute -top-1.5 -right-1.5 text-[9px] text-primary">beta</span>
+            <span className="absolute -right-1.5 -top-1.5 text-[9px] text-primary">
+              beta
+            </span>
           </button>
-          
-          <div className="relative sort-dropdown">
+
+          <div className="sort-dropdown relative">
             <button
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="flex items-center text-gray-500 text-sm transition duration-300 hover:text-gray-700 p-1"
+              className="flex items-center p-1 text-sm text-gray-500 transition duration-300 hover:text-gray-700"
               title={`排序：${getSortLabel()}`}
             >
               <SortDesc className="h-4 w-4" />
-              <span className="ml-1 hidden lg:inline">排序：{getSortLabel()}</span>
+              <span className="ml-1 hidden lg:inline">
+                排序：{getSortLabel()}
+              </span>
               <span className="ml-1 hidden sm:inline lg:hidden">排序</span>
               <ChevronDown className="ml-1 h-3.5 w-3.5" />
             </button>
-            
+
             {sortDropdownOpen && (
-              <div className="absolute left-0 top-full mt-1 w-36 rounded-md border border-gray-200 bg-white py-1 shadow-lg z-10">
+              <div className="absolute left-0 top-full z-10 mt-1 w-36 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
                 <button
                   onClick={() => {
                     setSortOption("default");
                     setSortDropdownOpen(false);
                   }}
-                  className={`w-full text-left rounded px-3 py-1 text-xs transition-colors ${
-                    sortOption === "default" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
+                  className={`w-full rounded px-3 py-1 text-left text-xs transition-colors ${
+                    sortOption === "default"
+                      ? "bg-gray-100 text-[#d97b53]"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   默认
@@ -193,8 +178,10 @@ const BookList = () => {
                     setSortOption("bookName");
                     setSortDropdownOpen(false);
                   }}
-                  className={`w-full text-left rounded px-3 py-1 text-xs transition-colors ${
-                    sortOption === "bookName" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
+                  className={`w-full rounded px-3 py-1 text-left text-xs transition-colors ${
+                    sortOption === "bookName"
+                      ? "bg-gray-100 text-[#d97b53]"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   按书名降序
@@ -204,8 +191,10 @@ const BookList = () => {
                     setSortOption("updateTime");
                     setSortDropdownOpen(false);
                   }}
-                  className={`w-full text-left rounded px-3 py-1 text-xs transition-colors ${
-                    sortOption === "updateTime" ? "bg-gray-100 text-[#d97b53]" : "text-gray-700 hover:bg-gray-50"
+                  className={`w-full rounded px-3 py-1 text-left text-xs transition-colors ${
+                    sortOption === "updateTime"
+                      ? "bg-gray-100 text-[#d97b53]"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
                   按同步时间降序
@@ -217,7 +206,7 @@ const BookList = () => {
 
         {/* 移动端搜索展开时的全宽搜索框 */}
         {isSearchExpanded && (
-          <div className="relative sm:hidden w-full">
+          <div className="relative w-full sm:hidden">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
@@ -233,9 +222,11 @@ const BookList = () => {
             />
           </div>
         )}
-        
+
         {/* 移动端非搜索状态和桌面端的按钮组 */}
-        <div className={`flex items-center gap-2 ${isSearchExpanded ? 'hidden sm:flex' : 'flex'}`}>
+        <div
+          className={`flex items-center gap-2 ${isSearchExpanded ? "hidden sm:flex" : "flex"}`}
+        >
           {/* 移动端搜索按钮 */}
           <div className="relative sm:hidden">
             <button
@@ -247,7 +238,7 @@ const BookList = () => {
               <span>搜索</span>
             </button>
           </div>
-          
+
           {/* 桌面端搜索框 */}
           <div className="relative hidden sm:block">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -255,13 +246,13 @@ const BookList = () => {
             </div>
             <input
               type="text"
-              className="w-32 sm:w-full rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-32 rounded-md border border-gray-200 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:w-full"
               placeholder="输入书籍名称"
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
-          
+
           {/* <button
             onClick={onAIChatToggle}
             className="flex items-center gap-1 rounded-md bg-primary/10 px-2 sm:px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
@@ -277,55 +268,64 @@ const BookList = () => {
 
       <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredBooks.map((item: any) => (
-        <li
-          key={item.bookId}
-          className="group flex cursor-pointer flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md"
-          onClick={() => handleBookClick(item.bookId)}
+          <li
+            key={item.bookId}
+            className="group flex cursor-pointer flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md"
+            onClick={() => handleBookClick(item.bookId)}
             title="点击查看相关笔记"
-        >
-          <div className="flex">
-            <img
-              className="mr-4 h-32 w-24 rounded object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
-              src={item.cover}
-              alt={item.bookName}
-            />
-            <div className="flex flex-1 flex-col justify-between">
-              <div>
-                <h2 className="line-clamp-2 text-base font-medium text-gray-900">
-                  {item.bookName}
-                </h2>
+          >
+            <div className="flex">
+              <img
+                className="mr-4 h-32 w-24 rounded object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
+                src={item.cover}
+                alt={item.bookName}
+              />
+              <div className="flex flex-1 flex-col justify-between">
+                <div>
+                  <h2 className="line-clamp-2 text-base font-medium text-gray-900">
+                    {item.bookName}
+                  </h2>
                   {item.lastReadTime && (
-                <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-gray-500">
                       最后阅读时间：{item.lastReadTime}
-                </p>
+                    </p>
                   )}
-              </div>
-              <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
-                <span className="flex items-center">
-                  <span className="mr-1">划线</span>
-                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600">{item.markCount}</span>
-                </span>
-                <span className="flex items-center">
-                  <span className="mr-1">想法</span>
-                  <span className="rounded-full bg-green-50 px-2 py-0.5 text-green-600">{item.noteCount}</span>
-                </span>
+                </div>
+                <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                  <span className="flex items-center">
+                    <span className="mr-1">划线</span>
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600">
+                      {item.markCount}
+                    </span>
+                  </span>
+                  <span className="flex items-center">
+                    <span className="mr-1">想法</span>
+                    <span className="rounded-full bg-green-50 px-2 py-0.5 text-green-600">
+                      {item.noteCount}
+                    </span>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </li>
-      ))}
+          </li>
+        ))}
 
         {/* 没有结果时显示提示 */}
-        {filteredBooks.length === 0 && (
+        {filteredBooks.length === 0 && !isLoading && (
           <li className="col-span-full py-8 text-center text-gray-500">
             未找到匹配的书籍
           </li>
         )}
-    </ul>
-      
+        {isLoading && (
+          <li className="col-span-full py-8 text-center text-gray-500">
+            加载中...
+          </li>
+        )}
+      </ul>
+
       {/* 统计分析弹窗 */}
-      <StatsDialog 
-        isOpen={showStats} 
+      <StatsDialog
+        isOpen={showStats}
         onClose={() => setShowStats(false)}
         books={books}
         notes={notes}

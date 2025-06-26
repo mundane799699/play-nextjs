@@ -7,3 +7,7 @@ export async function booksService(token: any): Promise<any> {
     },
   });
 }
+
+export async function getAllBooks() {
+  return await axios.get("/wxread/books/listAll");
+}
