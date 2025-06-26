@@ -239,11 +239,11 @@ const Page = () => {
                       <div className="space-y-4">
                         {currentNote.markText &&
                           currentNote.markText.trim() !== "" && (
-                            <div className="text-gray-600">
+                            <div className="text-sm sm:text-base text-gray-600">
                               {currentNote.markText}
                             </div>
                           )}
-                        <div className="text-lg leading-relaxed text-gray-800">
+                        <div className="text-sm sm:text-lg leading-relaxed text-gray-800">
                           {currentNote.noteContent}
                         </div>
                         <div className="text-sm text-gray-500">

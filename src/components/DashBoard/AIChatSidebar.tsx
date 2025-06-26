@@ -407,7 +407,7 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
           {chatHistory.length > 0 && (
             <button
               onClick={handleClearHistory}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
               aria-label="清空对话记录"
               title="清空对话记录"
             >
@@ -416,7 +416,7 @@ const AIChatSidebar = ({ onClose }: AIChatSidebarProps) => {
           )}
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
             aria-label="关闭"
           >
             <CloseIcon />
