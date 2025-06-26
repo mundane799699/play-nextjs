@@ -377,13 +377,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
       <ul className="mt-4 space-y-6">
         {/* 加载中 */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="rounded-full bg-gray-100 p-3">
-              <li className="col-span-full py-8 text-center text-gray-500">
-                加载中...
-              </li>
-            </div>
-          </div>
+          <li className="col-span-full py-8 text-center text-gray-500">
+            加载中...
+          </li>
         )}
         {/* 有笔记 */}
         {filteredNotes.length > 0 &&

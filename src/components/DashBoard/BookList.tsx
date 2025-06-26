@@ -267,48 +267,49 @@ const BookList = () => {
       </div>
 
       <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredBooks.map((item: any) => (
-          <li
-            key={item.bookId}
-            className="group flex cursor-pointer flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md"
-            onClick={() => handleBookClick(item.bookId)}
-            title="点击查看相关笔记"
-          >
-            <div className="flex">
-              <img
-                className="mr-4 h-32 w-24 rounded object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
-                src={item.cover}
-                alt={item.bookName}
-              />
-              <div className="flex flex-1 flex-col justify-between">
-                <div>
-                  <h2 className="line-clamp-2 text-base font-medium text-gray-900">
-                    {item.bookName}
-                  </h2>
-                  {item.lastReadTime && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      最后阅读时间：{item.lastReadTime}
-                    </p>
-                  )}
-                </div>
-                <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
-                  <span className="flex items-center">
-                    <span className="mr-1">划线</span>
-                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600">
-                      {item.markCount}
+        {!isLoading &&
+          filteredBooks.map((item: any) => (
+            <li
+              key={item.bookId}
+              className="group flex cursor-pointer flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md"
+              onClick={() => handleBookClick(item.bookId)}
+              title="点击查看相关笔记"
+            >
+              <div className="flex">
+                <img
+                  className="mr-4 h-32 w-24 rounded object-cover shadow-sm transition-transform duration-200 group-hover:scale-105"
+                  src={item.cover}
+                  alt={item.bookName}
+                />
+                <div className="flex flex-1 flex-col justify-between">
+                  <div>
+                    <h2 className="line-clamp-2 text-base font-medium text-gray-900">
+                      {item.bookName}
+                    </h2>
+                    {item.lastReadTime && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        最后阅读时间：{item.lastReadTime}
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                    <span className="flex items-center">
+                      <span className="mr-1">划线</span>
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-600">
+                        {item.markCount}
+                      </span>
                     </span>
-                  </span>
-                  <span className="flex items-center">
-                    <span className="mr-1">想法</span>
-                    <span className="rounded-full bg-green-50 px-2 py-0.5 text-green-600">
-                      {item.noteCount}
+                    <span className="flex items-center">
+                      <span className="mr-1">想法</span>
+                      <span className="rounded-full bg-green-50 px-2 py-0.5 text-green-600">
+                        {item.noteCount}
+                      </span>
                     </span>
-                  </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          ))}
 
         {/* 没有结果时显示提示 */}
         {filteredBooks.length === 0 && !isLoading && (
