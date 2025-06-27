@@ -33,8 +33,7 @@ import NoteItem, { Note } from "./NoteItem";
 type SortOption = "time" | "bookName" | "timeAsc" | "random";
 
 const NoteList = ({ initialBookId }: { initialBookId: string }) => {
-  const { onAIChatToggle } = useDashboard();
-
+  const [totalNotes, setTotalNotes] = useState<Note[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
@@ -42,8 +41,6 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const [bookId, setBookId] = useState(initialBookId);
 
   const [bookName, setBookName] = useState("");
-
-  const [totalNotes, setTotalNotes] = useState(0);
 
   const [sortOption, setSortOption] = useState<SortOption>("time");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -67,9 +64,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     const { code, rows, bookName, total } = res;
     if (code === 200) {
       const filteredRows = rows.filter((item: any) => item.markText);
+      setTotalNotes(filteredRows);
       setFilteredNotes(filteredRows);
       setBookName(bookName);
-      setTotalNotes(filteredRows.length);
     }
     setIsLoading(false);
   }, []);
@@ -79,7 +76,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   }, []);
 
   useEffect(() => {
-    let sorted = [...filteredNotes];
+    let sorted = [...totalNotes];
 
     // 先应用搜索过滤
     if (debouncedSearchTerm) {
@@ -110,7 +107,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     }
 
     setFilteredNotes(sorted);
-  }, [debouncedSearchTerm, sortOption]);
+  }, [debouncedSearchTerm, totalNotes, sortOption]);
 
   const handleExport = async (format: "excel" | "markdown") => {
     if (format === "excel") {
@@ -192,7 +189,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           <span className="whitespace-nowrap text-xs text-gray-600 sm:text-base">
             {bookName ? `${bookName}：` : "共"}
             <span className="font-medium">
-              {filteredNotes.length}/{totalNotes}条
+              {filteredNotes.length}/{totalNotes.length}条
             </span>
           </span>
 
