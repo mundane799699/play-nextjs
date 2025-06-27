@@ -135,7 +135,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
     }
   };
 
-  const handleDeleteNote = async (reviewId: string) => {
+  const handleDeleteNote = async (bookId: string, reviewId: string) => {
     try {
       // Optimistic UI update
       setFilteredNotes((prevNotes) =>
@@ -390,7 +390,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
               note={note}
               copiedNoteId={copiedNoteId}
               onCopyNote={handleCopyNote}
-              onDeleteNote={handleDeleteNote}
+              onDeleteNote={() => {
+                handleDeleteNote(note.bookId, note.reviewId);
+              }}
             />
           ))}
 
