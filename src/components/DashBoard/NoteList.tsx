@@ -37,9 +37,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   const [bookId, setBookId] = useState(initialBookId);
   const [bookName, setBookName] = useState("");
@@ -56,25 +56,61 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getNotes = useCallback(async (bookId: string) => {
-    setIsLoading(true);
-    const res = (await fetchNotes(bookId, pageNum, pageSize)) as any;
-
-    const { code, data } = res;
-    if (code === 200) {
-      const { list, total, hasNextPage } = data;
-      setList(list);
-      setTotal(total);
-      setHasNextPage(hasNextPage);
-    }
-    setIsLoading(false);
-  }, []);
+  const observer = useRef<IntersectionObserver>();
+  const loadMoreRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          setPageNum((prevPageNum) => prevPageNum + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasNextPage],
+  );
 
   useEffect(() => {
-    getNotes(bookId);
-  }, []);
+    const getNotes = async () => {
+      if (!hasNextPage && pageNum > 1) return;
+
+      setIsLoading(true);
+      try {
+        const res = (await fetchNotes(bookId, pageNum, pageSize)) as any;
+
+        const { code, data } = res;
+        if (code === 200) {
+          const { list: newList, total, hasNextPage: newHasNextPage } = data;
+          setList((prevList) =>
+            pageNum === 1 ? newList : [...prevList, ...newList],
+          );
+          setTotal(total);
+          setHasNextPage(newHasNextPage);
+        } else {
+          // handle error case
+          if (pageNum === 1) {
+            setList([]);
+            setTotal(0);
+          }
+          setHasNextPage(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notes:", error);
+        if (pageNum === 1) {
+          setList([]);
+          setTotal(0);
+        }
+        setHasNextPage(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getNotes();
+  }, [bookId, pageNum, pageSize]);
 
   const handleExport = async (format: "excel" | "markdown") => {
     if (format === "excel") {
@@ -105,13 +141,16 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
       setList((prevNotes) =>
         prevNotes.filter((note) => note.reviewId !== reviewId),
       );
+      setTotal((prev) => prev - 1);
 
       // Call the API to delete the note
       await deleteNoteService(bookId, reviewId);
     } catch (error) {
       console.error("删除笔记失败:", error);
-      // Revert UI if API call fails
-      getNotes(bookId);
+      // Revert UI if API call fails - a full refetch might be too much, but it's simple
+      setList([]);
+      setPageNum(1);
+      setHasNextPage(true);
     }
   };
 
@@ -156,7 +195,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           <span className="whitespace-nowrap text-xs text-gray-600 sm:text-base">
             {bookName ? `${bookName}：` : "共"}
             <span className="font-medium">
-              {list.length}/{list.length}条
+              {list.length}/{total}条
             </span>
           </span>
 
@@ -340,28 +379,54 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
       <ul className="mt-4 space-y-6">
         {/* 加载中 */}
-        {isLoading && (
+        {isLoading && pageNum === 1 && list.length === 0 && (
           <li className="col-span-full py-8 text-center text-gray-500">
             加载中...
           </li>
         )}
         {/* 有笔记 */}
         {list.length > 0 &&
-          !isLoading &&
-          list.map((note: Note) => (
-            <NoteItem
-              key={note.reviewId}
-              note={note}
-              copiedNoteId={copiedNoteId}
-              onCopyNote={handleCopyNote}
-              onDeleteNote={() => {
-                handleDeleteNote(note.bookId, note.reviewId);
-              }}
-            />
-          ))}
+          list.map((note: Note, index) => {
+            if (index === list.length - 1) {
+              return (
+                <div ref={loadMoreRef} key={note.reviewId}>
+                  <NoteItem
+                    note={note}
+                    copiedNoteId={copiedNoteId}
+                    onCopyNote={handleCopyNote}
+                    onDeleteNote={() => {
+                      handleDeleteNote(note.bookId, note.reviewId);
+                    }}
+                  />
+                </div>
+              );
+            }
+            return (
+              <NoteItem
+                key={note.reviewId}
+                note={note}
+                copiedNoteId={copiedNoteId}
+                onCopyNote={handleCopyNote}
+                onDeleteNote={() => {
+                  handleDeleteNote(note.bookId, note.reviewId);
+                }}
+              />
+            );
+          })}
+
+        {/* 正在加载更多 */}
+        {isLoading && hasNextPage && (
+          <li className="py-4 text-center text-sm text-gray-500">
+            正在加载更多...
+          </li>
+        )}
+
+        {!isLoading && !hasNextPage && list.length > 0 && (
+          <li className="py-4 text-center text-sm text-gray-500">没有更多了</li>
+        )}
 
         {/* 没有笔记 */}
-        {list.length === 0 && !isLoading && (
+        {list.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="rounded-full bg-gray-100 p-3">
               <Search className="h-6 w-6 text-gray-400" />
