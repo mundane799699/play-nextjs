@@ -1,5 +1,4 @@
 "use client";
-import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,17 +68,23 @@ const Header = () => {
               ? "shadow-nav fixed z-[999] border-b border-stroke bg-[#faf6f2]/80 backdrop-blur-[5px] dark:border-dark-3/20 dark:bg-dark/10"
               : "shadow-nav fixed z-[999] border-b border-stroke bg-white/80 backdrop-blur-[5px] dark:border-dark-3/20 dark:bg-dark/10"
             : pathUrl === "/"
-            ? "absolute bg-transparent border-b border-white/20 dark:border-white/10"
-            : "absolute bg-transparent border-b border-gray-200 dark:border-gray-700"
+              ? "absolute border-b border-white/20 bg-transparent dark:border-white/10"
+              : "absolute border-b border-gray-200 bg-transparent dark:border-gray-700"
         }`}
       >
-        <div className={pathUrl.startsWith("/dashboard") ? "w-full px-4" : "container"}>
+        <div
+          className={
+            pathUrl.startsWith("/dashboard") ? "w-full px-4" : "container"
+          }
+        >
           <div className="relative -mx-4 flex items-center justify-between">
-            <div className={`max-w-full px-4 ${
-              pathUrl.startsWith("/dashboard") 
-                ? "w-48 lg:fixed lg:left-0 lg:z-50" 
-                : "w-60"
-            }`}>
+            <div
+              className={`max-w-full px-4 ${
+                pathUrl.startsWith("/dashboard")
+                  ? "w-48 lg:fixed lg:left-0 lg:z-50"
+                  : "w-60"
+              }`}
+            >
               <Link
                 href="/"
                 className={`navbar-logo block w-full ${
@@ -127,9 +132,11 @@ const Header = () => {
                 )}
               </Link>
             </div>
-            <div className={`flex w-full items-center justify-end ${
-              pathUrl.startsWith("/dashboard") ? "lg:ml-48 lg:pr-4" : "px-4"
-            }`}>
+            <div
+              className={`flex w-full items-center justify-end ${
+                pathUrl.startsWith("/dashboard") ? "lg:ml-48 lg:pr-4" : "px-4"
+              }`}
+            >
               <button
                 onClick={navbarToggleHandler}
                 id="navbarToggler"
@@ -164,7 +171,7 @@ const Header = () => {
                   }`}
                 />
               </button>
-              
+
               {/* 导航菜单 */}
               <nav
                 id="navbarCollapse"
@@ -289,11 +296,15 @@ const Header = () => {
                   )}
                 </ul>
               </nav>
-              
+
               {/* 用户登录/注册按钮区域 - 只在桌面端显示 */}
-              <div className={`hidden sm:flex items-center justify-end ${
-                pathUrl.startsWith("/dashboard") ? "pr-4 lg:pr-0" : "pr-16 lg:pr-0"
-              }`}>
+              <div
+                className={`hidden items-center justify-end sm:flex ${
+                  pathUrl.startsWith("/dashboard")
+                    ? "pr-4 lg:pr-0"
+                    : "pr-16 lg:pr-0"
+                }`}
+              >
                 {user?.userName ? (
                   <>
                     <Link
