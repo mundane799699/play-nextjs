@@ -33,15 +33,16 @@ import NoteItem, { Note } from "./NoteItem";
 type SortOption = "time" | "bookName" | "timeAsc" | "random";
 
 const NoteList = ({ initialBookId }: { initialBookId: string }) => {
-  const [totalNotes, setTotalNotes] = useState<Note[]>([]);
-  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
+  const [list, setList] = useState<Note[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const [bookId, setBookId] = useState(initialBookId);
-
   const [bookName, setBookName] = useState("");
-
   const [sortOption, setSortOption] = useState<SortOption>("time");
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
@@ -59,14 +60,14 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
 
   const getNotes = useCallback(async (bookId: string) => {
     setIsLoading(true);
-    const res = (await fetchNotes(bookId, "")) as any;
+    const res = (await fetchNotes(bookId, pageNum, pageSize)) as any;
 
-    const { code, rows, bookName, total } = res;
+    const { code, data } = res;
     if (code === 200) {
-      const filteredRows = rows.filter((item: any) => item.markText);
-      setTotalNotes(filteredRows);
-      setFilteredNotes(filteredRows);
-      setBookName(bookName);
+      const { list, total, hasNextPage } = data;
+      setList(list);
+      setTotal(total);
+      setHasNextPage(hasNextPage);
     }
     setIsLoading(false);
   }, []);
@@ -74,40 +75,6 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   useEffect(() => {
     getNotes(bookId);
   }, []);
-
-  useEffect(() => {
-    let sorted = [...totalNotes];
-
-    // 先应用搜索过滤
-    if (debouncedSearchTerm) {
-      sorted = sorted.filter(
-        (note: Note) =>
-          note.markText
-            ?.toLowerCase()
-            .includes(debouncedSearchTerm.toLowerCase()) ||
-          note.noteContent
-            ?.toLowerCase()
-            .includes(debouncedSearchTerm.toLowerCase()),
-      );
-    }
-
-    // 应用排序
-    if (sortOption === "time") {
-      sorted.sort((a: Note, b: Note) => (b.noteTime || 0) - (a.noteTime || 0));
-    } else if (sortOption === "bookName") {
-      sorted.sort((a: Note, b: Note) => {
-        const bookNameA = a.bookName?.toLowerCase() || "";
-        const bookNameB = b.bookName?.toLowerCase() || "";
-        return bookNameA.localeCompare(bookNameB);
-      });
-    } else if (sortOption === "timeAsc") {
-      sorted.sort((a: Note, b: Note) => (a.noteTime || 0) - (b.noteTime || 0));
-    } else if (sortOption === "random") {
-      sorted = sorted.sort(() => 0.5 - Math.random());
-    }
-
-    setFilteredNotes(sorted);
-  }, [debouncedSearchTerm, totalNotes, sortOption]);
 
   const handleExport = async (format: "excel" | "markdown") => {
     if (format === "excel") {
@@ -135,7 +102,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const handleDeleteNote = async (bookId: string, reviewId: string) => {
     try {
       // Optimistic UI update
-      setFilteredNotes((prevNotes) =>
+      setList((prevNotes) =>
         prevNotes.filter((note) => note.reviewId !== reviewId),
       );
 
@@ -189,7 +156,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           <span className="whitespace-nowrap text-xs text-gray-600 sm:text-base">
             {bookName ? `${bookName}：` : "共"}
             <span className="font-medium">
-              {filteredNotes.length}/{totalNotes.length}条
+              {list.length}/{list.length}条
             </span>
           </span>
 
@@ -379,9 +346,9 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           </li>
         )}
         {/* 有笔记 */}
-        {filteredNotes.length > 0 &&
+        {list.length > 0 &&
           !isLoading &&
-          filteredNotes.map((note: Note) => (
+          list.map((note: Note) => (
             <NoteItem
               key={note.reviewId}
               note={note}
@@ -394,7 +361,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
           ))}
 
         {/* 没有笔记 */}
-        {filteredNotes.length === 0 && !isLoading && (
+        {list.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="rounded-full bg-gray-100 p-3">
               <Search className="h-6 w-6 text-gray-400" />

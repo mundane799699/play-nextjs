@@ -18,12 +18,14 @@ export async function notesService(
 
 export async function fetchNotes(
   bookId: string,
-  bookName: string,
+  pageNum: number,
+  pageSize: number,
 ): Promise<any> {
-  return await axios.get(`/wxread/notes/noteslist`, {
+  return await axios.get(`/wxread/notes/pageList`, {
     params: {
       bookId,
-      bookName,
+      pageNum,
+      pageSize,
     },
   });
 }
