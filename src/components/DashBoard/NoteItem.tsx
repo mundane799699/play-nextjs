@@ -1,6 +1,5 @@
 import React from "react";
 import dayjs from "dayjs";
-import Link from "next/link";
 import { Trash2 } from "lucide-react";
 
 export interface Note {
@@ -50,14 +49,11 @@ const NoteItem: React.FC<NoteItemProps> = ({
 
         {/* 书籍信息 */}
         <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4 text-sm">
-          <Link
-            href={`/reader/${note.bookId}`}
-            className="font-medium text-gray-900 transition-colors hover:text-primary"
-          >
+          <span className="font-medium text-gray-900">
             {note.chapterName
               ? `${note.bookName} / ${note.chapterName}`
               : note.bookName}
-          </Link>
+          </span>
           <div className="flex items-center gap-2">
             <span className="text-gray-500">
               {note.noteTime && dayjs.unix(note.noteTime).format("YYYY-MM-DD")}
