@@ -194,9 +194,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
         <div className="flex flex-shrink-0 items-center space-x-1 sm:space-x-4">
           <span className="whitespace-nowrap text-xs text-gray-600 sm:text-base">
             {bookName ? `${bookName}：` : "共"}
-            <span className="font-medium">
-              {list.length}/{total}条
-            </span>
+            <span className="font-medium">{total}条</span>
           </span>
 
           <button
