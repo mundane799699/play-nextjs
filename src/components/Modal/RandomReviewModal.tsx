@@ -159,7 +159,7 @@ const RandomReviewModal: React.FC<RandomReviewModalProps> = ({
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">
                   {currentNote.noteTime &&
-                    dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD")}
+                    dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD HH:mm:ss")}
                 </span>
               </div>
             </div>

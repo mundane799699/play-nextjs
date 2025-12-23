@@ -123,7 +123,7 @@ const NoteList = ({ initialBookId }: { initialBookId: string }) => {
   const handleCopyNote = async (note: Note) => {
     try {
       // 构建复制内容
-      const copyContent = `${note.markText ? `📝 ${note.markText}\n\n` : ""}${note.noteContent}\n\n📚 ${note.bookName}${note.chapterName ? ` / ${note.chapterName}` : ""}\n📅 ${note.noteTime ? dayjs.unix(note.noteTime).format("YYYY-MM-DD") : ""}`;
+      const copyContent = `${note.markText ? `📝 ${note.markText}\n\n` : ""}${note.noteContent}\n\n📚 ${note.bookName}${note.chapterName ? ` / ${note.chapterName}` : ""}\n📅 ${note.noteTime ? dayjs.unix(note.noteTime).format("YYYY-MM-DD HH:mm:ss") : ""}`;
 
       await navigator.clipboard.writeText(copyContent);
 

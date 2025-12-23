@@ -274,7 +274,7 @@ const Page = () => {
                     </div>
                     <span className="font-light tracking-wider text-[#8F8F8F]">
                       {currentNote?.noteTime
-                        ? dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD")
+                        ? dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD HH:mm:ss")
                         : ""}
                     </span>
                   </div>
@@ -391,7 +391,7 @@ const Page = () => {
                       }
                     >
                       {currentNote?.noteTime
-                        ? dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD")
+                        ? dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD HH:mm:ss")
                         : ""}
                     </span>
                   </div>

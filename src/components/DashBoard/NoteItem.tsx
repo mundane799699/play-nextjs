@@ -56,7 +56,7 @@ const NoteItem: React.FC<NoteItemProps> = ({
           </span>
           <div className="flex items-center gap-2">
             <span className="text-gray-500">
-              {note.noteTime && dayjs.unix(note.noteTime).format("YYYY-MM-DD")}
+              {note.noteTime && dayjs.unix(note.noteTime).format("YYYY-MM-DD HH:mm:ss")}
             </span>
             <button
               onClick={() => onCopyNote(note)}
